@@ -43,14 +43,12 @@ $services = mysqli_query(
             <span class="hero-eyebrow">
                 COMPLETE VEHICLE CARE
                 Vehicle Managemnet System
-                Car CAre
-                System CAr service
-                Car CAre system
+                Car Care Services
             </span>
 
             <h1>
 
-                Professional Vehicle Care
+                
                 <span>You Can Trust.</span>
 
             </h1>
