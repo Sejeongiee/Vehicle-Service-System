@@ -1,7 +1,6 @@
 <?php
 
 include "includes/config.php";
-include "includes/public_header.php";
 
 
 $reference =
@@ -77,6 +76,8 @@ if (!$appointment) {
     exit;
 
 }
+
+include "includes/public_header.php";
 
 ?>
 
