@@ -2,6 +2,27 @@
 
 include "includes/admin_header.php";
 
+<?php if (
+    !empty($reservation['reference_number'])
+): ?>
+
+<div class="mb-3">
+
+    <small class="text-muted">
+        Appointment Reference
+    </small>
+
+    <h5>
+        <?= htmlspecialchars(
+                $reservation['reference_number']
+            ); ?>
+    </h5>
+
+</div>
+
+<?php endif;
+
+
 /*
 |--------------------------------------------------------------------------
 | CHECK PAYMENT
@@ -9,32 +30,32 @@ include "includes/admin_header.php";
 */
 
 $payment_stmt = mysqli_prepare(
-    $conn,
-    "SELECT
-        id,
-        amount,
-        payment_method,
-        status,
-        reference_number,
-        paid_at
-     FROM payments
-     WHERE reservation_id = ?
-     LIMIT 1"
+$conn,
+"SELECT
+id,
+amount,
+payment_method,
+status,
+reference_number,
+paid_at
+FROM payments
+WHERE reservation_id = ?
+LIMIT 1"
 );
 
 mysqli_stmt_bind_param(
-    $payment_stmt,
-    "i",
-    $reservation_id
+$payment_stmt,
+"i",
+$reservation_id
 );
 
 mysqli_stmt_execute($payment_stmt);
 
 $payment_result =
-    mysqli_stmt_get_result($payment_stmt);
+mysqli_stmt_get_result($payment_stmt);
 
 $payment =
-    mysqli_fetch_assoc($payment_result);
+mysqli_fetch_assoc($payment_result);
 
 mysqli_stmt_close($payment_stmt);
 
@@ -46,125 +67,77 @@ mysqli_stmt_close($payment_stmt);
 */
 
 $reservation_id = intval(
-    $_GET['id'] ?? 0
+$_GET['id'] ?? 0
 );
 
 
-if ($reservation_id <= 0) {
+if ($reservation_id <= 0) { header("Location: reservations.php"); exit; } 
 
-    header("Location: reservations.php");
-    exit;
+    /*|-------------------------------------------------------------------------- | 
+     GET RESERVATION DETAILS
+    |-------------------------------------------------------------------------- */ 
+    
+    $stmt=mysqli_prepare( $conn, "SELECT
+        r.*,
 
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| GET RESERVATION DETAILS
-|--------------------------------------------------------------------------
-*/
-
-$query = "
-    SELECT
-        r.id,
-        r.service_type,
-        r.appointment_date,
-        r.appointment_time,
-        r.remarks,
-        r.status,
-        r.mechanic_id,
-        r.created_at,
-
-        u.fullname AS customer_name,
-        u.email AS customer_email,
+        c.fullname AS customer_name,
+        c.email AS customer_email,
+        c.phone AS customer_phone,
+        c.address AS customer_address,
 
         v.brand,
         v.model,
         v.year,
         v.plate_number,
-        v.color
+        v.color,
 
-    FROM reservations r
+        m.fullname AS mechanic_name,
+        m.specialization AS mechanic_specialization
 
-    INNER JOIN users u
-        ON r.user_id = u.id
+     FROM reservations r
 
-    INNER JOIN vehicles v
+     LEFT JOIN customers c
+        ON r.customer_id = c.id
+
+     LEFT JOIN vehicles v
         ON r.vehicle_id = v.id
 
-    WHERE r.id = ?
+     LEFT JOIN mechanics m
+        ON r.mechanic_id = m.id
 
-    LIMIT 1
-";
+     WHERE r.id = ?
 
-
-$stmt = mysqli_prepare(
-    $conn,
-    $query
-);
-
-mysqli_stmt_bind_param(
-    $stmt,
-    "i",
-    $reservation_id
-);
-
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
-
-$reservation = mysqli_fetch_assoc($result);
-
-mysqli_stmt_close($stmt);
-
-
-/*
-|--------------------------------------------------------------------------
-| RESERVATION NOT FOUND
-|--------------------------------------------------------------------------
-*/
-
-if (!$reservation) {
-
-    header("Location: reservations.php");
-    exit;
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| STATUS BADGE
-|--------------------------------------------------------------------------
-*/
-
-$status = $reservation['status'];
-
-$status_class = 'secondary';
-
-if ($status === 'Pending') {
-
-    $status_class = 'warning';
-
-} elseif ($status === 'Approved') {
-
-    $status_class = 'primary';
-
-} elseif ($status === 'In Progress') {
-
-    $status_class = 'info';
-
-} elseif ($status === 'Completed') {
-
-    $status_class = 'success';
-
-} elseif ($status === 'Cancelled') {
-
-    $status_class = 'danger';
-
-}
-
-?>
+     LIMIT 1" ); mysqli_stmt_bind_param( $stmt, "i" , $reservation_id ); mysqli_stmt_execute($stmt);
+    $result=mysqli_stmt_get_result($stmt); $reservation=mysqli_fetch_assoc($result); mysqli_stmt_close($stmt); 
+    
+    /*
+    |-------------------------------------------------------------------------- | 
+        RESERVATION NOT FOUND
+    |-------------------------------------------------------------------------- */ 
+    
+    if (!$reservation) {
+    header("Location: reservations.php"); exit; } 
+    
+    /*
+    |-------------------------------------------------------------------------- | 
+        STATUS BADGE
+    |-------------------------------------------------------------------------- */ 
+    
+    $status=$reservation['status'];
+    $status_class='secondary' ; 
+    
+    if ($status==='Pending' ) { $status_class='warning' ; } 
+    
+    elseif ($status==='Approved' ) {
+    $status_class='primary' ; } 
+    
+    elseif ($status==='In Progress' ) { $status_class='info' ; } 
+    
+    elseif
+    ($status==='Completed' ) { $status_class='success' ; } 
+    
+    elseif ($status==='Cancelled' ) { $status_class='danger' ; }
+    ?>
 
 
 <div class="container-fluid">
@@ -187,10 +160,7 @@ if ($status === 'Pending') {
         </div>
 
 
-        <a
-            href="reservations.php"
-            class="btn btn-secondary"
-        >
+        <a href="reservations.php" class="btn btn-secondary">
 
             ← Back to Reservations
 
@@ -375,9 +345,7 @@ if ($status === 'Pending') {
 
                         <div>
 
-                            <span
-                                class="badge text-bg-<?= $status_class; ?> fs-6"
-                            >
+                            <span class="badge text-bg-<?= $status_class; ?> fs-6">
 
                                 <?= htmlspecialchars(
                                     $status
@@ -454,7 +422,7 @@ if ($status === 'Pending') {
                                 )
                             ): ?>
 
-                                <?= nl2br(
+                            <?= nl2br(
                                     htmlspecialchars(
                                         $reservation[
                                             'remarks'
@@ -464,9 +432,9 @@ if ($status === 'Pending') {
 
                             <?php else: ?>
 
-                                <span class="text-muted">
-                                    No remarks provided.
-                                </span>
+                            <span class="text-muted">
+                                No remarks provided.
+                            </span>
 
                             <?php endif; ?>
 
@@ -481,20 +449,20 @@ if ($status === 'Pending') {
 
         </div>
 
-<!-- MECHANIC -->
+        <!-- MECHANIC -->
 
-<div class="col-lg-4">
+        <div class="col-lg-4">
 
-    <div class="dashboard-card">
+            <div class="dashboard-card">
 
-        <h4 class="mb-4">
-            Mechanic
-        </h4>
+                <h4 class="mb-4">
+                    Mechanic
+                </h4>
 
 
-        <?php if (!empty($reservation['mechanic_id'])): ?>
+                <?php if (!empty($reservation['mechanic_id'])): ?>
 
-            <?php
+                <?php
 
             $mechanic_stmt = mysqli_prepare(
                 $conn,
@@ -523,7 +491,7 @@ if ($status === 'Pending') {
             ?>
 
 
-            <?php if ($mechanic): ?>
+                <?php if ($mechanic): ?>
 
                 <div class="mb-3">
 
@@ -546,21 +514,21 @@ if ($status === 'Pending') {
                     )
                 ): ?>
 
-                    <div class="mb-3">
+                <div class="mb-3">
 
-                        <label class="text-muted">
-                            Specialization
-                        </label>
+                    <label class="text-muted">
+                        Specialization
+                    </label>
 
-                        <div>
+                    <div>
 
-                            <?= htmlspecialchars(
+                        <?= htmlspecialchars(
                                 $mechanic['specialization']
                             ); ?>
 
-                        </div>
-
                     </div>
+
+                </div>
 
                 <?php endif; ?>
 
@@ -571,21 +539,21 @@ if ($status === 'Pending') {
                     )
                 ): ?>
 
-                    <div class="mb-3">
+                <div class="mb-3">
 
-                        <label class="text-muted">
-                            Phone
-                        </label>
+                    <label class="text-muted">
+                        Phone
+                    </label>
 
-                        <div>
+                    <div>
 
-                            <?= htmlspecialchars(
+                        <?= htmlspecialchars(
                                 $mechanic['phone']
                             ); ?>
 
-                        </div>
-
                     </div>
+
+                </div>
 
                 <?php endif; ?>
 
@@ -597,7 +565,7 @@ if ($status === 'Pending') {
                 </span>
 
 
-            <?php else: ?>
+                <?php else: ?>
 
                 <div class="alert alert-warning">
 
@@ -605,37 +573,30 @@ if ($status === 'Pending') {
 
                 </div>
 
-            <?php endif; ?>
+                <?php endif; ?>
 
 
-        <?php else: ?>
+                <?php else: ?>
 
 
-            <div class="text-center py-3">
+                <div class="text-center py-3">
 
-                <div class="fs-1 mb-3">
-                    🔧
+                    <div class="fs-1 mb-3">
+                        🔧
+                    </div>
+
+                    <p class="text-muted">
+                        No mechanic assigned yet.
+                    </p>
+
                 </div>
 
-                <p class="text-muted">
-                    No mechanic assigned yet.
-                </p>
 
-            </div>
+                <?php if ($status === 'Approved'): ?>
 
+                <form method="POST" action="assign_mechanic.php">
 
-            <?php if ($status === 'Approved'): ?>
-
-                <form
-                    method="POST"
-                    action="assign_mechanic.php"
-                >
-
-                    <input
-                        type="hidden"
-                        name="reservation_id"
-                        value="<?= $reservation['id']; ?>"
-                    >
+                    <input type="hidden" name="reservation_id" value="<?= $reservation['id']; ?>">
 
 
                     <div class="mb-3">
@@ -645,11 +606,7 @@ if ($status === 'Pending') {
                         </label>
 
 
-                        <select
-                            name="mechanic_id"
-                            class="form-select"
-                            required
-                        >
+                        <select name="mechanic_id" class="form-select" required>
 
                             <option value="">
                                 -- Select Mechanic --
@@ -685,24 +642,22 @@ if ($status === 'Pending') {
                             ): ?>
 
 
-                                <?php while (
+                            <?php while (
                                     $available_mechanic =
                                         mysqli_fetch_assoc(
                                             $mechanics_result
                                         )
                                 ): ?>
 
-                                    <option
-                                        value="<?= $available_mechanic['id']; ?>"
-                                    >
+                            <option value="<?= $available_mechanic['id']; ?>">
 
-                                        <?= htmlspecialchars(
+                                <?= htmlspecialchars(
                                             $available_mechanic[
                                                 'fullname'
                                             ]
                                         ); ?>
 
-                                        <?php if (
+                                <?php if (
                                             !empty(
                                                 $available_mechanic[
                                                     'specialization'
@@ -710,27 +665,27 @@ if ($status === 'Pending') {
                                             )
                                         ): ?>
 
-                                            -
-                                            <?= htmlspecialchars(
+                                -
+                                <?= htmlspecialchars(
                                                 $available_mechanic[
                                                     'specialization'
                                                 ]
                                             ); ?>
 
-                                        <?php endif; ?>
+                                <?php endif; ?>
 
-                                    </option>
+                            </option>
 
-                                <?php endwhile; ?>
+                            <?php endwhile; ?>
 
 
                             <?php else: ?>
 
-                                <option value="" disabled>
+                            <option value="" disabled>
 
-                                    No available mechanics
+                                No available mechanics
 
-                                </option>
+                            </option>
 
                             <?php endif; ?>
 
@@ -740,10 +695,7 @@ if ($status === 'Pending') {
                     </div>
 
 
-                    <button
-                        type="submit"
-                        class="btn btn-primary w-100"
-                    >
+                    <button type="submit" class="btn btn-primary w-100">
 
                         🔧 Assign Mechanic
 
@@ -751,7 +703,7 @@ if ($status === 'Pending') {
 
                 </form>
 
-            <?php else: ?>
+                <?php else: ?>
 
                 <div class="alert alert-secondary mb-0">
 
@@ -760,75 +712,75 @@ if ($status === 'Pending') {
 
                 </div>
 
-            <?php endif; ?>
+                <?php endif; ?>
 
 
-        <?php endif; ?>
+                <?php endif; ?>
 
 
-    </div>
+            </div>
 
-</div>
+        </div>
 
-<!-- PAYMENT -->
+        <!-- PAYMENT -->
 
-<div class="col-12">
+        <div class="col-12">
 
-    <div class="dashboard-card">
+            <div class="dashboard-card">
 
-        <h4 class="mb-4">
-            Payment
-        </h4>
+                <h4 class="mb-4">
+                    Payment
+                </h4>
 
 
-        <?php if ($payment): ?>
+                <?php if ($payment): ?>
 
-            <div class="row">
+                <div class="row">
 
-                <div class="col-md-3 mb-3">
+                    <div class="col-md-3 mb-3">
 
-                    <label class="text-muted">
-                        Amount
-                    </label>
+                        <label class="text-muted">
+                            Amount
+                        </label>
 
-                    <h5>
-                        ₱<?= number_format(
+                        <h5>
+                            ₱<?= number_format(
                             $payment['amount'],
                             2
                         ); ?>
-                    </h5>
+                        </h5>
 
-                </div>
+                    </div>
 
 
-                <div class="col-md-3 mb-3">
+                    <div class="col-md-3 mb-3">
 
-                    <label class="text-muted">
-                        Method
-                    </label>
+                        <label class="text-muted">
+                            Method
+                        </label>
 
-                    <div>
+                        <div>
 
-                        <?= htmlspecialchars(
+                            <?= htmlspecialchars(
                             $payment[
                                 'payment_method'
                             ]
                         ); ?>
 
+                        </div>
+
                     </div>
 
-                </div>
 
+                    <div class="col-md-3 mb-3">
 
-                <div class="col-md-3 mb-3">
+                        <label class="text-muted">
+                            Status
+                        </label>
 
-                    <label class="text-muted">
-                        Status
-                    </label>
+                        <div>
 
-                    <div>
-
-                        <?php
+                            <?php
 
                         $payment_badge =
                             $payment['status']
@@ -843,30 +795,28 @@ if ($status === 'Pending') {
 
                         ?>
 
-                        <span
-                            class="badge text-bg-<?= $payment_badge; ?>"
-                        >
+                            <span class="badge text-bg-<?= $payment_badge; ?>">
 
-                            <?= htmlspecialchars(
+                                <?= htmlspecialchars(
                                 $payment['status']
                             ); ?>
 
-                        </span>
+                            </span>
+
+                        </div>
 
                     </div>
 
-                </div>
 
+                    <div class="col-md-3 mb-3">
 
-                <div class="col-md-3 mb-3">
+                        <label class="text-muted">
+                            Reference
+                        </label>
 
-                    <label class="text-muted">
-                        Reference
-                    </label>
+                        <div>
 
-                    <div>
-
-                        <?= !empty(
+                            <?= !empty(
                             $payment[
                                 'reference_number'
                             ]
@@ -878,24 +828,21 @@ if ($status === 'Pending') {
                             )
                             : '—'; ?>
 
+                        </div>
+
                     </div>
 
                 </div>
 
-            </div>
+
+                <a href="payment_view.php?id=<?= $payment['id']; ?>" class="btn btn-outline-primary">
+
+                    Manage Payment
+
+                </a>
 
 
-            <a
-                href="payment_view.php?id=<?= $payment['id']; ?>"
-                class="btn btn-outline-primary"
-            >
-
-                Manage Payment
-
-            </a>
-
-
-        <?php elseif (
+                <?php elseif (
             in_array(
                 $status,
                 [
@@ -907,35 +854,32 @@ if ($status === 'Pending') {
             )
         ): ?>
 
-            <p class="text-muted">
-                No payment record has been created
-                for this reservation.
-            </p>
+                <p class="text-muted">
+                    No payment record has been created
+                    for this reservation.
+                </p>
 
-            <a
-                href="payment_add.php?reservation_id=<?= $reservation['id']; ?>"
-                class="btn btn-primary"
-            >
+                <a href="payment_add.php?reservation_id=<?= $reservation['id']; ?>" class="btn btn-primary">
 
-                + Create Payment
+                    + Create Payment
 
-            </a>
+                </a>
 
 
-        <?php else: ?>
+                <?php else: ?>
 
-            <div class="alert alert-secondary mb-0">
+                <div class="alert alert-secondary mb-0">
 
-                Payment can be created after the
-                reservation is approved.
+                    Payment can be created after the
+                    reservation is approved.
+
+                </div>
+
+                <?php endif; ?>
 
             </div>
 
-        <?php endif; ?>
-
-    </div>
-
-</div>
+        </div>
 
         <!-- RESERVATION ACTIONS -->
 
@@ -950,183 +894,126 @@ if ($status === 'Pending') {
 
                 <?php if ($status === 'Pending'): ?>
 
-                    <div class="d-flex gap-2 flex-wrap">
+                <div class="d-flex gap-2 flex-wrap">
 
 
-                        <!-- APPROVE -->
+                    <!-- APPROVE -->
 
-                        <form
-                            method="POST"
-                            action="reservation_action.php"
-                        >
+                    <form method="POST" action="reservation_action.php">
 
-                            <input
-                                type="hidden"
-                                name="reservation_id"
-                                value="<?= $reservation['id']; ?>"
-                            >
+                        <input type="hidden" name="reservation_id" value="<?= $reservation['id']; ?>">
 
-                            <input
-                                type="hidden"
-                                name="action"
-                                value="approve"
-                            >
+                        <input type="hidden" name="action" value="approve">
 
-                            <button
-                                type="submit"
-                                class="btn btn-success"
-                                onclick="return confirm('Approve this reservation?');"
-                            >
+                        <button type="submit" class="btn btn-success"
+                            onclick="return confirm('Approve this reservation?');">
 
-                                ✓ Approve Reservation
+                            ✓ Approve Reservation
 
-                            </button>
+                        </button>
 
-                        </form>
+                    </form>
 
 
-                        <!-- CANCEL -->
+                    <!-- CANCEL -->
 
-                        <form
-                            method="POST"
-                            action="reservation_action.php"
-                        >
+                    <form method="POST" action="reservation_action.php">
 
-                            <input
-                                type="hidden"
-                                name="reservation_id"
-                                value="<?= $reservation['id']; ?>"
-                            >
+                        <input type="hidden" name="reservation_id" value="<?= $reservation['id']; ?>">
 
-                            <input
-                                type="hidden"
-                                name="action"
-                                value="cancel"
-                            >
+                        <input type="hidden" name="action" value="cancel">
 
-                            <button
-                                type="submit"
-                                class="btn btn-danger"
-                                onclick="return confirm('Cancel this reservation?');"
-                            >
+                        <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Cancel this reservation?');">
 
-                                ✕ Reject Reservation
+                            ✕ Reject Reservation
 
-                            </button>
+                        </button>
 
-                        </form>
+                    </form>
 
-                    </div>
+                </div>
 
 
                 <?php elseif ($status === 'Approved'): ?>
 
-    <?php if (!empty($reservation['mechanic_id'])): ?>
+                <?php if (!empty($reservation['mechanic_id'])): ?>
 
-        <div class="alert alert-primary">
+                <div class="alert alert-primary">
 
-            This reservation has been approved and
-            a mechanic has been assigned.
+                    This reservation has been approved and
+                    a mechanic has been assigned.
 
-        </div>
+                </div>
 
 
-        <form
-            method="POST"
-            action="reservation_action.php"
-        >
+                <form method="POST" action="reservation_action.php">
 
-            <input
-                type="hidden"
-                name="reservation_id"
-                value="<?= $reservation['id']; ?>"
-            >
+                    <input type="hidden" name="reservation_id" value="<?= $reservation['id']; ?>">
 
-            <input
-                type="hidden"
-                name="action"
-                value="start"
-            >
+                    <input type="hidden" name="action" value="start">
 
-            <button
-                type="submit"
-                class="btn btn-info"
-                onclick="return confirm('Start this service?');"
-            >
+                    <button type="submit" class="btn btn-info" onclick="return confirm('Start this service?');">
 
-                🔧 Start Service
+                        🔧 Start Service
 
-            </button>
+                    </button>
 
-        </form>
+                </form>
 
-    <?php else: ?>
+                <?php else: ?>
 
-        <div class="alert alert-warning">
+                <div class="alert alert-warning">
 
-            This reservation is approved, but no mechanic
-            has been assigned yet.
+                    This reservation is approved, but no mechanic
+                    has been assigned yet.
 
-        </div>
+                </div>
 
-    <?php endif; ?>
+                <?php endif; ?>
 
 
                 <?php elseif ($status === 'In Progress'): ?>
 
-    <div class="alert alert-info">
+                <div class="alert alert-info">
 
-        This service is currently in progress.
+                    This service is currently in progress.
 
-    </div>
+                </div>
 
 
-    <form
-        method="POST"
-        action="reservation_action.php"
-    >
+                <form method="POST" action="reservation_action.php">
 
-        <input
-            type="hidden"
-            name="reservation_id"
-            value="<?= $reservation['id']; ?>"
-        >
+                    <input type="hidden" name="reservation_id" value="<?= $reservation['id']; ?>">
 
-        <input
-            type="hidden"
-            name="action"
-            value="complete"
-        >
+                    <input type="hidden" name="action" value="complete">
 
-        <button
-            type="submit"
-            class="btn btn-success"
-            onclick="return confirm('Mark this service as completed?');"
-        >
+                    <button type="submit" class="btn btn-success"
+                        onclick="return confirm('Mark this service as completed?');">
 
-            ✓ Complete Service
+                        ✓ Complete Service
 
-        </button>
+                    </button>
 
-    </form>
+                </form>
 
 
                 <?php elseif ($status === 'Completed'): ?>
 
-                    <div class="alert alert-success">
+                <div class="alert alert-success">
 
-                        This service has been completed.
+                    This service has been completed.
 
-                    </div>
+                </div>
 
 
                 <?php elseif ($status === 'Cancelled'): ?>
 
-                    <div class="alert alert-danger">
+                <div class="alert alert-danger">
 
-                        This reservation has been cancelled.
+                    This reservation has been cancelled.
 
-                    </div>
+                </div>
 
                 <?php endif; ?>
 
