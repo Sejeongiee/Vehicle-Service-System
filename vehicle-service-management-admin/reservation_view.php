@@ -1,144 +1,73 @@
 <?php
 
-include "includes/admin_header.php";
+include "includes/admin_auth.php";
+include "includes/config.php";
 
-<?php if (
-    !empty($reservation['reference_number'])
-): ?>
+$reservation_id = intval($_GET['id'] ?? 0);
 
-<div class="mb-3">
+if ($reservation_id <= 0) {
+    header("Location: reservations.php");
+    exit;
+}
 
-    <small class="text-muted">
-        Appointment Reference
-    </small>
-
-    <h5>
-        <?= htmlspecialchars(
-                $reservation['reference_number']
-            ); ?>
-    </h5>
-
-</div>
-
-<?php endif;
-
-
-/*
-|--------------------------------------------------------------------------
-| CHECK PAYMENT
-|--------------------------------------------------------------------------
-*/
-
-$payment_stmt = mysqli_prepare(
-$conn,
-"SELECT
-id,
-amount,
-payment_method,
-status,
-reference_number,
-paid_at
-FROM payments
-WHERE reservation_id = ?
-LIMIT 1"
-);
-
-mysqli_stmt_bind_param(
-$payment_stmt,
-"i",
-$reservation_id
-);
-
-mysqli_stmt_execute($payment_stmt);
-
-$payment_result =
-mysqli_stmt_get_result($payment_stmt);
-
-$payment =
-mysqli_fetch_assoc($payment_result);
-
-mysqli_stmt_close($payment_stmt);
-
-
-/*
-|--------------------------------------------------------------------------
-| GET RESERVATION ID
-|--------------------------------------------------------------------------
-*/
-
-$reservation_id = intval(
-$_GET['id'] ?? 0
-);
-
-
-if ($reservation_id <= 0) { header("Location: reservations.php"); exit; } 
-
-    /*|-------------------------------------------------------------------------- | 
-     GET RESERVATION DETAILS
-    |-------------------------------------------------------------------------- */ 
-    
-    $stmt=mysqli_prepare( $conn, "SELECT
+$stmt = mysqli_prepare(
+    $conn,
+    "SELECT
         r.*,
-
         c.fullname AS customer_name,
         c.email AS customer_email,
         c.phone AS customer_phone,
         c.address AS customer_address,
-
         v.brand,
         v.model,
         v.year,
         v.plate_number,
         v.color,
-
         m.fullname AS mechanic_name,
         m.specialization AS mechanic_specialization
-
      FROM reservations r
-
-     LEFT JOIN customers c
-        ON r.customer_id = c.id
-
-     LEFT JOIN vehicles v
-        ON r.vehicle_id = v.id
-
-     LEFT JOIN mechanics m
-        ON r.mechanic_id = m.id
-
+     LEFT JOIN customers c ON r.customer_id = c.id
+     LEFT JOIN vehicles v ON r.vehicle_id = v.id
+     LEFT JOIN mechanics m ON r.mechanic_id = m.id
      WHERE r.id = ?
+     LIMIT 1"
+);
 
-     LIMIT 1" ); mysqli_stmt_bind_param( $stmt, "i" , $reservation_id ); mysqli_stmt_execute($stmt);
-    $result=mysqli_stmt_get_result($stmt); $reservation=mysqli_fetch_assoc($result); mysqli_stmt_close($stmt); 
-    
-    /*
-    |-------------------------------------------------------------------------- | 
-        RESERVATION NOT FOUND
-    |-------------------------------------------------------------------------- */ 
-    
-    if (!$reservation) {
-    header("Location: reservations.php"); exit; } 
-    
-    /*
-    |-------------------------------------------------------------------------- | 
-        STATUS BADGE
-    |-------------------------------------------------------------------------- */ 
-    
-    $status=$reservation['status'];
-    $status_class='secondary' ; 
-    
-    if ($status==='Pending' ) { $status_class='warning' ; } 
-    
-    elseif ($status==='Approved' ) {
-    $status_class='primary' ; } 
-    
-    elseif ($status==='In Progress' ) { $status_class='info' ; } 
-    
-    elseif
-    ($status==='Completed' ) { $status_class='success' ; } 
-    
-    elseif ($status==='Cancelled' ) { $status_class='danger' ; }
-    ?>
+mysqli_stmt_bind_param($stmt, "i", $reservation_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$reservation = mysqli_fetch_assoc($result);
+mysqli_stmt_close($stmt);
 
+if (!$reservation) {
+    header("Location: reservations.php");
+    exit;
+}
+
+$payment_stmt = mysqli_prepare(
+    $conn,
+    "SELECT id, amount, payment_method, status, reference_number, paid_at
+     FROM payments
+     WHERE reservation_id = ?
+     LIMIT 1"
+);
+mysqli_stmt_bind_param($payment_stmt, "i", $reservation_id);
+mysqli_stmt_execute($payment_stmt);
+$payment_result = mysqli_stmt_get_result($payment_stmt);
+$payment = mysqli_fetch_assoc($payment_result);
+mysqli_stmt_close($payment_stmt);
+
+$status = $reservation['status'];
+$status_class = 'secondary';
+if ($status === 'Pending') $status_class = 'warning';
+elseif ($status === 'Approved') $status_class = 'primary';
+elseif ($status === 'In Progress') $status_class = 'info';
+elseif ($status === 'Completed') $status_class = 'success';
+elseif ($status === 'Cancelled') $status_class = 'danger';
+
+include "includes/admin_header.php";
+
+?>
 
 <div class="container-fluid">
 
