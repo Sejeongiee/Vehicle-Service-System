@@ -24,7 +24,7 @@ $query = "
         r.status AS reservation_status,
         r.appointment_date,
 
-        u.fullname AS customer_name,
+        c.fullname AS customer_name,
 
         v.brand,
         v.model,
@@ -35,8 +35,8 @@ $query = "
     INNER JOIN reservations r
         ON p.reservation_id = r.id
 
-    INNER JOIN users u
-        ON r.user_id = u.id
+    LEFT JOIN customers c
+        ON r.customer_id = c.id
 
     INNER JOIN vehicles v
         ON r.vehicle_id = v.id
@@ -135,12 +135,12 @@ $total_paid = $paid_data['total'];
                         mysqli_num_rows($result) > 0
                     ): ?>
 
-                        <?php while (
+                    <?php while (
                             $payment =
                                 mysqli_fetch_assoc($result)
                         ): ?>
 
-                            <?php
+                    <?php
 
                             $badge = 'secondary';
 
@@ -169,124 +169,116 @@ $total_paid = $paid_data['total'];
 
                             ?>
 
-                            <tr>
+                    <tr>
 
-                                <td>
-                                    #<?= $payment['id']; ?>
-                                </td>
+                        <td>
+                            #<?= $payment['id']; ?>
+                        </td>
 
-                                <td>
+                        <td>
 
-                                    <?= htmlspecialchars(
+                            <?= htmlspecialchars(
                                         $payment['customer_name']
                                     ); ?>
 
-                                </td>
+                        </td>
 
-                                <td>
+                        <td>
 
-                                    <strong>
+                            <strong>
 
-                                        <?= htmlspecialchars(
+                                <?= htmlspecialchars(
                                             $payment['brand']
                                         ); ?>
 
-                                        <?= htmlspecialchars(
+                                <?= htmlspecialchars(
                                             $payment['model']
                                         ); ?>
 
-                                    </strong>
+                            </strong>
 
-                                    <br>
+                            <br>
 
-                                    <small class="text-muted">
+                            <small class="text-muted">
 
-                                        <?= htmlspecialchars(
+                                <?= htmlspecialchars(
                                             $payment['plate_number']
                                         ); ?>
 
-                                    </small>
+                            </small>
 
-                                </td>
+                        </td>
 
-                                <td>
+                        <td>
 
-                                    <?= htmlspecialchars(
+                            <?= htmlspecialchars(
                                         $payment['service_type']
                                     ); ?>
 
-                                </td>
+                        </td>
 
-                                <td>
+                        <td>
 
-                                    ₱<?= number_format(
+                            ₱<?= number_format(
                                         $payment['amount'],
                                         2
                                     ); ?>
 
-                                </td>
+                        </td>
 
-                                <td>
+                        <td>
 
-                                    <?= htmlspecialchars(
+                            <?= htmlspecialchars(
                                         $payment['payment_method']
                                     ); ?>
 
-                                </td>
+                        </td>
 
-                                <td>
+                        <td>
 
-                                    <span
-                                        class="badge text-bg-<?= $badge; ?>"
-                                    >
+                            <span class="badge text-bg-<?= $badge; ?>">
 
-                                        <?= htmlspecialchars(
+                                <?= htmlspecialchars(
                                             $payment['payment_status']
                                         ); ?>
 
-                                    </span>
+                            </span>
 
-                                </td>
+                        </td>
 
-                                <td>
+                        <td>
 
-                                    <a
-                                        href="payment_view.php?id=<?= $payment['id']; ?>"
-                                        class="btn btn-sm btn-outline-primary"
-                                    >
-                                        View
-                                    </a>
+                            <a href="payment_view.php?id=<?= $payment['id']; ?>" class="btn btn-sm btn-outline-primary">
+                                View
+                            </a>
 
-                                </td>
+                        </td>
 
-                            </tr>
+                    </tr>
 
-                        <?php endwhile; ?>
+                    <?php endwhile; ?>
 
                     <?php else: ?>
 
-                        <tr>
+                    <tr>
 
-                            <td
-                                colspan="8"
-                                class="text-center py-5"
-                            >
+                        <td colspan="8" class="text-center py-5">
 
-                                <div class="fs-1 mb-3">
-                                    💳
-                                </div>
+                            <div class="fs-1 mb-3">
+                                💳
+                            </div>
 
-                                <h5>
-                                    No Payments Yet
-                                </h5>
+                            <h5>
+                                No Payments Yet
+                            </h5>
 
-                                <p class="text-muted mb-0">
-                                    Payment records will appear here.
-                                </p>
+                            <p class="text-muted mb-0">
+                                Payment records will appear here.
+                            </p>
 
-                            </td>
+                        </td>
 
-                        </tr>
+                    </tr>
 
                     <?php endif; ?>
 

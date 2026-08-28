@@ -30,7 +30,7 @@ $stmt = mysqli_prepare(
         r.status,
         r.service_type,
 
-        u.fullname AS customer_name,
+        c.fullname AS customer_name,
 
         v.brand,
         v.model,
@@ -38,8 +38,8 @@ $stmt = mysqli_prepare(
 
      FROM reservations r
 
-     INNER JOIN users u
-        ON r.user_id = u.id
+     LEFT JOIN customers c
+        ON r.customer_id = c.id
 
      INNER JOIN vehicles v
         ON r.vehicle_id = v.id
@@ -286,9 +286,9 @@ include "includes/admin_header.php";
 
     <?php if ($error !== ''): ?>
 
-        <div class="alert alert-danger">
-            <?= htmlspecialchars($error); ?>
-        </div>
+    <div class="alert alert-danger">
+        <?= htmlspecialchars($error); ?>
+    </div>
 
     <?php endif; ?>
 
@@ -369,17 +369,9 @@ include "includes/admin_header.php";
                                 ₱
                             </span>
 
-                            <input
-                                type="number"
-                                name="amount"
-                                class="form-control"
-                                min="0.01"
-                                step="0.01"
-                                value="<?= htmlspecialchars(
+                            <input type="number" name="amount" class="form-control" min="0.01" step="0.01" value="<?= htmlspecialchars(
                                     $amount
-                                ); ?>"
-                                required
-                            >
+                                ); ?>" required>
 
                         </div>
 
@@ -392,10 +384,7 @@ include "includes/admin_header.php";
                             Payment Method
                         </label>
 
-                        <select
-                            name="payment_method"
-                            class="form-select"
-                        >
+                        <select name="payment_method" class="form-select">
 
                             <?php
 
@@ -413,15 +402,12 @@ include "includes/admin_header.php";
                                 as $method
                             ): ?>
 
-                                <option
-                                    value="<?= $method; ?>"
-                                    <?= $payment_method
+                            <option value="<?= $method; ?>" <?= $payment_method
                                         === $method
                                         ? 'selected'
-                                        : ''; ?>
-                                >
-                                    <?= $method; ?>
-                                </option>
+                                        : ''; ?>>
+                                <?= $method; ?>
+                            </option>
 
                             <?php endforeach; ?>
 
@@ -436,32 +422,20 @@ include "includes/admin_header.php";
                             Reference Number
                         </label>
 
-                        <input
-                            type="text"
-                            name="reference_number"
-                            class="form-control"
-                            value="<?= htmlspecialchars(
+                        <input type="text" name="reference_number" class="form-control" value="<?= htmlspecialchars(
                                 $reference_number
-                            ); ?>"
-                            placeholder="Optional for cash payments"
-                        >
+                            ); ?>" placeholder="Optional for cash payments">
 
                     </div>
 
 
                     <div class="d-flex gap-2">
 
-                        <button
-                            type="submit"
-                            class="btn btn-primary"
-                        >
+                        <button type="submit" class="btn btn-primary">
                             Create Payment
                         </button>
 
-                        <a
-                            href="reservation_view.php?id=<?= $reservation_id; ?>"
-                            class="btn btn-secondary"
-                        >
+                        <a href="reservation_view.php?id=<?= $reservation_id; ?>" class="btn btn-secondary">
                             Cancel
                         </a>
 
