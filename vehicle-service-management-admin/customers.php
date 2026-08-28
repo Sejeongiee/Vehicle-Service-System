@@ -2,94 +2,38 @@
 
 include "includes/admin_header.php";
 
-
-/*
-|--------------------------------------------------------------------------
-| SEARCH
-|--------------------------------------------------------------------------
-*/
-
 $search = trim($_GET['search'] ?? '');
+$search_safe = mysqli_real_escape_string($conn, $search);
 
-
-/*
-|--------------------------------------------------------------------------
-| CUSTOMER QUERY
-|--------------------------------------------------------------------------
-*/
-
-$customers = mysqli_query(
-    $conn,
-    "SELECT
+$query = "
+    SELECT
         c.id,
         c.fullname,
         c.email,
         c.phone,
         c.address,
         c.created_at,
+        COUNT(DISTINCT v.id) AS vehicle_count,
+        COUNT(DISTINCT r.id) AS reservation_count
+    FROM customers c
+    LEFT JOIN vehicles v ON c.id = v.customer_id
+    LEFT JOIN reservations r ON c.id = r.customer_id
+";
 
-        COUNT(DISTINCT v.id) AS total_vehicles,
-        COUNT(DISTINCT r.id) AS total_appointments
-
-     FROM customers c
-
-     LEFT JOIN vehicles v
-        ON c.id = v.customer_id
-
-     LEFT JOIN reservations r
-        ON c.id = r.customer_id
-
-     GROUP BY
-        c.id,
-        c.fullname,
-        c.email,
-        c.phone,
-        c.address,
-        c.created_at
-
-     ORDER BY c.created_at DESC"
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| SEARCH FILTER
-|--------------------------------------------------------------------------
-*/
-
-if (!empty($search)) {
-
-    $search_safe = mysqli_real_escape_string(
-        $conn,
-        $search
-    );
-
+if ($search !== '') {
     $query .= "
-        AND (
-            u.fullname LIKE '%$search_safe%'
-            OR u.email LIKE '%$search_safe%'
-        )
+        WHERE c.fullname LIKE '%$search_safe%'
+           OR c.email LIKE '%$search_safe%'
+           OR c.phone LIKE '%$search_safe%'
     ";
 }
 
-
 $query .= "
-
-    GROUP BY
-        u.id,
-        u.fullname,
-        u.email,
-        u.created_at
-
-    ORDER BY
-        u.created_at DESC
+    GROUP BY c.id, c.fullname, c.email, c.phone, c.address, c.created_at
+    ORDER BY c.created_at DESC
 ";
 
-
-$result = mysqli_query(
-    $conn,
-    $query
-);
+$result = mysqli_query($conn, $query);
 
 ?>
 
