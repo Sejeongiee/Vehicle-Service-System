@@ -42,9 +42,7 @@ $services = mysqli_query(
 
             <span class="hero-eyebrow">
                 COMPLETE VEHICLE CARE
-                fdssdf
-                hakdog
-                Vehicle Managemnet System
+                Vehicle Management System
                 Car Care Services
             </span>
 
