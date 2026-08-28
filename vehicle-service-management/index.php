@@ -363,7 +363,7 @@ $services = mysqli_query(
 
             <div class="col-lg-6">
 
-                <img src="images/cover.jpg" alt="Vehicle Service" class="why-image">
+                <img src="images/hero.jpg" alt="Vehicle Service" class="why-image">
 
             </div>
 
