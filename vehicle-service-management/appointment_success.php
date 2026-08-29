@@ -4,12 +4,19 @@ include "includes/config.php";
 
 
 $reference =
-    trim($_GET['ref'] ?? '');
+    strtoupper(
+        trim($_GET['ref'] ?? '')
+    );
 
 
 if ($reference === '') {
 
-    header("Location: appointment.php");
+    header(
+        "Location: "
+        . BASE_URL
+        . "/appointment.php"
+    );
+
     exit;
 
 }
@@ -59,23 +66,39 @@ mysqli_stmt_bind_param(
     $reference
 );
 
+
 mysqli_stmt_execute($stmt);
+
 
 $result =
     mysqli_stmt_get_result($stmt);
 
+
 $appointment =
     mysqli_fetch_assoc($result);
+
 
 mysqli_stmt_close($stmt);
 
 
 if (!$appointment) {
 
-    header("Location: appointment.php");
+    header(
+        "Location: "
+        . BASE_URL
+        . "/appointment.php"
+    );
+
     exit;
 
 }
+
+
+/*
+|--------------------------------------------------------------------------
+| LOAD HTML ONLY AFTER ALL REDIRECTS
+|--------------------------------------------------------------------------
+*/
 
 include "includes/public_header.php";
 
@@ -282,7 +305,7 @@ include "includes/public_header.php";
             <div class="success-actions">
 
 
-                <a href="track.php?ref=<?= urlencode(
+                <a href="<?= BASE_URL ?>/track.php?ref=<?= urlencode(
                         $appointment[
                             'reference_number'
                         ]
@@ -293,7 +316,7 @@ include "includes/public_header.php";
                 </a>
 
 
-                <a href="appointment.php" class="success-secondary">
+                <a href="<?= BASE_URL ?>/appointment.php" class="success-secondary">
 
                     BOOK ANOTHER VEHICLE
 
