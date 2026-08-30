@@ -23,7 +23,7 @@ include_once __DIR__ . "/admin_auth.php";
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="<?= ADMIN_BASE_URL ?>/css/admin.css">
 
 </head>
 
@@ -108,7 +108,7 @@ include_once __DIR__ . "/admin_auth.php";
                 <div>
 
                     Welcome,
-                    <?= htmlspecialchars($_SESSION['admin_name']); ?>
+                    <?= htmlspecialchars($_SESSION['admin_name'] ?? 'Staff'); ?>
 
                 </div>
 
