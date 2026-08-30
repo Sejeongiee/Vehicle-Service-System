@@ -4,18 +4,44 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
+
+/*
+|--------------------------------------------------------------------------
+| CHECK LOGIN
+|--------------------------------------------------------------------------
+*/
 
 if (
-    !isset($_SESSION['admin_role']) ||
-    $_SESSION['admin_role'] !== 'staff'
+    !isset($_SESSION['admin_id']) ||
+    !isset($_SESSION['admin_role'])
 ) {
+
+    header(
+        "Location: "
+        . ADMIN_BASE_URL
+        . "/login.php"
+    );
+
+    exit;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| STAFF ACCESS ONLY
+|--------------------------------------------------------------------------
+*/
+
+if ($_SESSION['admin_role'] !== 'staff') {
+
     session_unset();
     session_destroy();
 
-    header("Location: login.php");
-    exit();
+    header(
+        "Location: "
+        . ADMIN_BASE_URL
+        . "/login.php"
+    );
+
+    exit;
 }

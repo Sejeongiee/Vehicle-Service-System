@@ -13,7 +13,37 @@ $conn = mysqli_connect(
 );
 
 if (!$conn) {
-    die("Database connection failed: " . mysqli_connect_error());
+    die(
+        "Database connection failed: "
+        . mysqli_connect_error()
+    );
 }
 
-mysqli_set_charset($conn, "utf8mb4");
+mysqli_set_charset(
+    $conn,
+    "utf8mb4"
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN BASE URL
+|--------------------------------------------------------------------------
+*/
+
+define(
+    'ADMIN_BASE_URL',
+    '/Vehicle-Service-System/vehicle-service-management-admin'
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| PUBLIC WEBSITE URL
+|--------------------------------------------------------------------------
+*/
+
+define(
+    'PUBLIC_BASE_URL',
+    '/Vehicle-Service-System/vehicle-service-management'
+);
