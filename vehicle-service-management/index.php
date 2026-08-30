@@ -62,9 +62,8 @@ $services = mysqli_query(
 
             <p>
 
-                Convenient vehicle maintenance,
-                professional service and easy online
-                appointment scheduling.
+                We are your one stop shop for your car's maintenance and repairs. 
+                Our accommodating head mechanic, Lucky, specializes on all car makes and models.
 
             </p>
 
