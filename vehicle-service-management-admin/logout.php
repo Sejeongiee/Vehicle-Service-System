@@ -1,15 +1,49 @@
 <?php
 
-session_start();
+include "includes/config.php";
 
-unset($_SESSION['admin_id']);
-unset($_SESSION['admin_name']);
-unset($_SESSION['admin_role']);
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+
+$_SESSION = [];
+
+
+/*
+|--------------------------------------------------------------------------
+| DELETE SESSION COOKIE
+|--------------------------------------------------------------------------
+*/
+
+if (ini_get("session.use_cookies")) {
+
+    $params =
+        session_get_cookie_params();
+
+
+    setcookie(
+        session_name(),
+        '',
+        time() - 42000,
+        $params["path"],
+        $params["domain"],
+        $params["secure"],
+        $params["httponly"]
+    );
+
+}
+
 
 session_destroy();
 
-header("Location: login.php");
 
-exit();
+header(
+    "Location: "
+    . ADMIN_BASE_URL
+    . "/login.php"
+);
 
-?>
+
+exit;
