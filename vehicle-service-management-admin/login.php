@@ -4,54 +4,194 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+
 include "includes/config.php";
+
+
+/*
+|--------------------------------------------------------------------------
+| ALREADY LOGGED IN
+|--------------------------------------------------------------------------
+*/
+
+if (
+    isset($_SESSION['admin_id']) &&
+    isset($_SESSION['admin_role']) &&
+    $_SESSION['admin_role'] === 'staff'
+) {
+
+    header(
+        "Location: "
+        . ADMIN_BASE_URL
+        . "/dashboard.php"
+    );
+
+    exit;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CSRF TOKEN
+|--------------------------------------------------------------------------
+*/
+
+if (empty($_SESSION['admin_csrf_token'])) {
+
+    $_SESSION['admin_csrf_token'] =
+        bin2hex(random_bytes(32));
+
+}
+
 
 $error = "";
 
-if (isset($_POST['login'])) {
 
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
+/*
+|--------------------------------------------------------------------------
+| LOGIN
+|--------------------------------------------------------------------------
+*/
 
-    $stmt = mysqli_prepare(
-        $conn,
-        "SELECT id, fullname, email, password, role
-         FROM users
-         WHERE email = ?
-         AND role = 'staff'
-         LIMIT 1"
-    );
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    mysqli_stmt_bind_param(
-        $stmt,
-        "s",
-        $email
-    );
 
-    mysqli_stmt_execute($stmt);
+    $csrf_token =
+        $_POST['csrf_token'] ?? '';
 
-    $result = mysqli_stmt_get_result($stmt);
 
-    if (mysqli_num_rows($result) === 1) {
+    if (
+        empty($csrf_token) ||
+        !hash_equals(
+            $_SESSION['admin_csrf_token'],
+            $csrf_token
+        )
+    ) {
 
-        $user = mysqli_fetch_assoc($result);
+        $error =
+            "Invalid login request. Please refresh the page.";
 
-        if (password_verify($password, $user['password'])) {
+    }
+
+
+    $email =
+        strtolower(
+            trim($_POST['email'] ?? '')
+        );
+
+
+    $password =
+        $_POST['password'] ?? '';
+
+
+    if (
+        $error === '' &&
+        (
+            $email === '' ||
+            $password === ''
+        )
+    ) {
+
+        $error =
+            "Please enter your email and password.";
+
+    }
+
+
+    if ($error === '') {
+
+
+        $stmt = mysqli_prepare(
+            $conn,
+            "SELECT
+                id,
+                fullname,
+                email,
+                password,
+                role
+
+             FROM users
+
+             WHERE email = ?
+             AND role = 'staff'
+
+             LIMIT 1"
+        );
+
+
+        mysqli_stmt_bind_param(
+            $stmt,
+            "s",
+            $email
+        );
+
+
+        mysqli_stmt_execute($stmt);
+
+
+        $result =
+            mysqli_stmt_get_result($stmt);
+
+
+        $user =
+            mysqli_fetch_assoc($result);
+
+
+        if (
+            $user &&
+            password_verify(
+                $password,
+                $user['password']
+            )
+        ) {
+
 
             session_regenerate_id(true);
 
-            $_SESSION['admin_id'] = $user['id'];
-            $_SESSION['admin_name'] = $user['fullname'];
-            $_SESSION['admin_role'] = $user['role'];
 
-            header("Location: dashboard.php");
-            exit();
+            $_SESSION['admin_id'] =
+                intval($user['id']);
+
+
+            $_SESSION['admin_name'] =
+                $user['fullname'];
+
+
+            $_SESSION['admin_role'] =
+                $user['role'];
+
+
+            /*
+            | Regenerate CSRF token
+            */
+
+            $_SESSION['admin_csrf_token'] =
+                bin2hex(random_bytes(32));
+
+
+            mysqli_stmt_close($stmt);
+
+
+            header(
+                "Location: "
+                . ADMIN_BASE_URL
+                . "/dashboard.php"
+            );
+
+
+            exit;
+
         }
+
+
+        mysqli_stmt_close($stmt);
+
+
+        $error =
+            "Invalid staff email or password.";
+
     }
 
-    $error = "Invalid staff email or password.";
-
-    mysqli_stmt_close($stmt);
 }
 
 ?>
@@ -63,115 +203,92 @@ if (isset($_POST['login'])) {
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Vehicle Service Management Admin</title>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
-    <link
-        rel="stylesheet"
-        href="css/admin.css"
-    >
+    <link rel="stylesheet" href="css/admin.css">
 
 </head>
 
 <body class="admin-login-page">
 
-<div class="container">
+    <div class="container">
 
-    <div class="row justify-content-center">
+        <div class="row justify-content-center">
 
-        <div class="col-md-5">
+            <div class="col-md-5">
 
-            <div class="admin-login-card">
+                <div class="admin-login-card">
 
-                <div class="text-center mb-4">
+                    <div class="text-center mb-4">
 
-                    <h2>
-                        Vehicle Service
-                    </h2>
+                        <h2>
+                            Vehicle Service
+                        </h2>
 
-                    <h4>
-                        Management Admin
-                    </h4>
+                        <h4>
+                            Management Admin
+                        </h4>
 
-                    <p class="text-muted">
-                        Staff Portal
-                    </p>
+                        <p class="text-muted">
+                            Staff Portal
+                        </p>
 
-                </div>
+                    </div>
 
-                <?php if (!empty($error)): ?>
+                    <?php if (!empty($error)): ?>
 
                     <div class="alert alert-danger">
                         <?= htmlspecialchars($error); ?>
                     </div>
 
-                <?php endif; ?>
+                    <?php endif; ?>
 
-                <form method="POST">
+                    <form method="POST">
 
-                    <div class="mb-3">
+                        <div class="mb-3">
 
-                        <label class="form-label">
-                            Staff Email
-                        </label>
+                            <label class="form-label">
+                                Staff Email
+                            </label>
 
-                        <input
-                            type="email"
-                            name="email"
-                            class="form-control"
-                            required
-                        >
+                            <input type="email" name="email" class="form-control" required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Password
+                            </label>
+
+                            <input type="password" name="password" class="form-control" required>
+
+                        </div>
+
+                        <button type="submit" name="login" class="btn btn-primary w-100">
+
+                            Staff Login
+
+                        </button>
+
+                    </form>
+
+                    <div class="text-center mt-4">
+
+                        <a href="http://localhost/vehicle-service-management/">
+
+                            ← Customer Website
+
+                        </a>
 
                     </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Password
-                        </label>
-
-                        <input
-                            type="password"
-                            name="password"
-                            class="form-control"
-                            required
-                        >
-
-                    </div>
-
-                    <button
-                        type="submit"
-                        name="login"
-                        class="btn btn-primary w-100">
-
-                        Staff Login
-
-                    </button>
-
-                </form>
-
-                <div class="text-center mt-4">
-
-                    <a
-                        href="http://localhost/vehicle-service-management/">
-
-                        ← Customer Website
-
-                    </a>
 
                 </div>
 
@@ -180,8 +297,6 @@ if (isset($_POST['login'])) {
         </div>
 
     </div>
-
-</div>
 
 </body>
 
