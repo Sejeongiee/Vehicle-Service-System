@@ -5,22 +5,36 @@
         <div class="row g-4">
 
 
-            <div class="col-lg-5">
+             <div class="col-lg-5">
 
-                <h4>
-                    Vehicle Service Management
-                </h4>
+                <div class="footer-brand">
+                    <img src="images/logo.png" alt="Lucky Yuna Logo" class="footer-logo">
+
+                    <h4>Lucky Yuna Car Care Center</h4>
+                </div>
 
                 <p>
-                    Reliable automotive maintenance,
-                    professional vehicle service and
-                    convenient online appointment scheduling.
+                    We are your one stop shop for your car's maintenance and repairs. 
+                    Our accommodating head mechanic, Lucky, specializes on all car makes and models.
+                </p>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <h5>
+                    Opening Hours
+                </h5>
+
+                <p>
+                    Monday - Sunday: 8:00 AM - 5:00 PM
                 </p>
 
             </div>
 
 
-            <div class="col-lg-3">
+
+            <!-- <div class="col-lg-3">
 
                 <h5>
                     Quick Links
@@ -51,7 +65,7 @@
                     Track Appointment
                 </a>
 
-            </div>
+            </div> !-->
 
 
             <div class="col-lg-4">

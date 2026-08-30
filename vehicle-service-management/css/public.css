@@ -365,7 +365,21 @@ body {
 }
 
 /* FOOTER */
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
+.footer-logo {
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+}
+
+.footer-brand h4 {
+    margin: 0;
+}
 .public-footer {
   background: #090909;
   color: #bcbcbc;
