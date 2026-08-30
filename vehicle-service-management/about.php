@@ -67,9 +67,7 @@ include "includes/public_header.php";
 
                 </p>
 
-                <a href="tel:09068624144" class="phone-number">
-    <i class="fas fa-phone"></i> 📞09068624144
-</a>
+                
 
 
                 <a href="<?= BASE_URL ?>/appointment.php" class="about-book-button">

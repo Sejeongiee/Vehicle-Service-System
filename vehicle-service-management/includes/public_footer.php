@@ -94,7 +94,7 @@
         <div class="footer-bottom">
 
             © <?= date('Y'); ?>
-            Vehicle Service Management.
+           Lucky Yuna Car Care Center.
             All rights reserved.
 
         </div>
