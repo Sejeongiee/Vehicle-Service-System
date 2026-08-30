@@ -460,7 +460,7 @@ $services = mysqli_query(
                     temporarily.
                 -->
 
-                <img src="<?= BASE_URL ?>/images/hero.jpg" alt="Vehicle Service" class="why-image">
+                <img src="<?= BASE_URL ?>/images/cover.png" alt="Vehicle Service" class="why-image" style="width: 100%; max-width: 700px; height: auto;">
 
 
             </div>

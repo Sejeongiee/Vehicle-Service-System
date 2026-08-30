@@ -41,24 +41,22 @@ include_once __DIR__ . "/config.php";
 
     <nav class="public-navbar">
 
-        <div class="container">
+    <div class="container">
 
-            <div class="navbar-content">
+        <div class="navbar-content">
 
+            <!-- LOGO + TITLE -->
+            <a href="<?= BASE_URL ?>/index.php" class="public-logo">
 
-                <!-- LOGO -->
+                <img src="<?= BASE_URL ?>/images/logo.png"
+                     alt="Lucky Yuna Logo"
+                     style="width: 45px; height: 45px; object-fit: contain;">
 
-                <a href="<?= BASE_URL ?>/index.php" class="public-logo">
+                <span>
+                    Lucky Yuna Car Care Center
+                </span>
 
-                    <span class="logo-mark">
-                        VS
-                    </span>
-
-                    <span>
-                        VEHICLE SERVICE
-                    </span>
-
-                </a>
+            </a>
 
 
                 <!-- MOBILE BUTTON -->
