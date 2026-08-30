@@ -252,6 +252,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <form method="POST">
 
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_csrf_token']); 
+                        ?>">
+
                         <div class="mb-3">
 
                             <label class="form-label">
@@ -272,7 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         </div>
 
-                        <button type="submit" name="login" class="btn btn-primary w-100">
+                        <button type="submit" class="btn btn-primary w-100">
 
                             Staff Login
 
@@ -282,7 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="text-center mt-4">
 
-                        <a href="http://localhost/vehicle-service-management/">
+                        <a href="<?= PUBLIC_BASE_URL ?>/">
 
                             ← Customer Website
 
