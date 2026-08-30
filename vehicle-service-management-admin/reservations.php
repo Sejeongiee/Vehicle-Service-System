@@ -46,9 +46,6 @@ $reservations = mysqli_query(
         r.appointment_time DESC"
 );
 
-
-$result = mysqli_query($conn, $query);
-
 ?>
 
 <div class="container-fluid">

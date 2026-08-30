@@ -196,6 +196,8 @@ $completed = mysqli_fetch_assoc(
 
     </div>
 
+    <!-- Second Row of Statistics -->
+
     <div class="row g-5 mt-1">
 
         <div class="col-md-3">
