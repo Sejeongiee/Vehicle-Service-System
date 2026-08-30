@@ -38,7 +38,7 @@ include "includes/public_header.php";
             <div class="col-lg-6">
 
                 <span class="section-label">
-                    WHO WE ARE
+                    WHY CHOOSE US
                 </span>
 
 
@@ -49,33 +49,25 @@ include "includes/public_header.php";
 
                 <p>
 
-                    The Vehicle Service Management System
-                    provides customers with a convenient way
-                    to schedule vehicle maintenance and
-                    monitor service progress.
+                    At Lucky Yuna Car Care Center, we provide reliable vehicle 
+                    maintenance and repair services with quality workmanship and
+                     customer satisfaction as our priority.
 
                 </p>
 
 
                 <p>
 
-                    Customers can select available services,
-                    provide their vehicle information,
-                    choose an appointment schedule and track
-                    their appointment using a unique reference
-                    number.
+                    Our experienced mechanics use proper tools and proven techniques to 
+                    give your vehicle the care it needs. Through our Vehicle Service 
+                    Management System, customers can easily choose services, enter 
+                    vehicle information, schedule appointments, and track service progress 
+                    using a unique reference number—making vehicle care simple, organized, 
+                    and convenient.
 
                 </p>
 
-
-                <p>
-
-                    On the administrative side, staff can
-                    manage appointments, mechanics, services,
-                    payments and reports from a separate
-                    management system.
-
-                </p>
+                
 
 
                 <a href="<?= BASE_URL ?>/appointment.php" class="about-book-button">
