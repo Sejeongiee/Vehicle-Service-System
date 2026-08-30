@@ -78,8 +78,7 @@ $total_customers = mysqli_fetch_assoc(
     mysqli_query(
         $conn,
         "SELECT COUNT(*) AS total
-         FROM users
-         WHERE role = 'customer'"
+         FROM customers"
     )
 )['total'];
 
@@ -492,18 +491,18 @@ $monthly_revenue_result = mysqli_query(
                             ): ?>
 
 
-                                <?php while (
+                            <?php while (
                                     $revenue =
                                         mysqli_fetch_assoc(
                                             $monthly_revenue_result
                                         )
                                 ): ?>
 
-                                    <tr>
+                            <tr>
 
-                                        <td>
+                                <td>
 
-                                            <?= date(
+                                    <?= date(
                                                 'F Y',
                                                 strtotime(
                                                     $revenue['month']
@@ -511,36 +510,33 @@ $monthly_revenue_result = mysqli_query(
                                                 )
                                             ); ?>
 
-                                        </td>
+                                </td>
 
-                                        <td>
+                                <td>
 
-                                            ₱<?= number_format(
+                                    ₱<?= number_format(
                                                 $revenue['total'],
                                                 2
                                             ); ?>
 
-                                        </td>
+                                </td>
 
-                                    </tr>
+                            </tr>
 
-                                <?php endwhile; ?>
+                            <?php endwhile; ?>
 
 
                             <?php else: ?>
 
-                                <tr>
+                            <tr>
 
-                                    <td
-                                        colspan="2"
-                                        class="text-center text-muted"
-                                    >
+                                <td colspan="2" class="text-center text-muted">
 
-                                        No paid transactions yet.
+                                    No paid transactions yet.
 
-                                    </td>
+                                </td>
 
-                                </tr>
+                            </tr>
 
                             <?php endif; ?>
 
@@ -606,58 +602,53 @@ $monthly_revenue_result = mysqli_query(
                             ): ?>
 
 
-                                <?php while (
+                            <?php while (
                                     $service =
                                         mysqli_fetch_assoc(
                                             $services_result
                                         )
                                 ): ?>
 
-                                    <tr>
+                            <tr>
 
-                                        <td>
+                                <td>
 
-                                            <?= htmlspecialchars(
+                                    <?= htmlspecialchars(
                                                 $service[
                                                     'service_type'
                                                 ]
                                             ); ?>
 
-                                        </td>
+                                </td>
 
-                                        <td>
+                                <td>
 
-                                            <span
-                                                class="badge text-bg-primary"
-                                            >
+                                    <span class="badge text-bg-primary">
 
-                                                <?= $service[
+                                        <?= $service[
                                                     'total'
                                                 ]; ?>
 
-                                            </span>
+                                    </span>
 
-                                        </td>
+                                </td>
 
-                                    </tr>
+                            </tr>
 
-                                <?php endwhile; ?>
+                            <?php endwhile; ?>
 
 
                             <?php else: ?>
 
-                                <tr>
+                            <tr>
 
-                                    <td
-                                        colspan="2"
-                                        class="text-center text-muted"
-                                    >
+                                <td colspan="2" class="text-center text-muted">
 
-                                        No service data available.
+                                    No service data available.
 
-                                    </td>
+                                </td>
 
-                                </tr>
+                            </tr>
 
                             <?php endif; ?>
 
@@ -721,28 +712,28 @@ $monthly_revenue_result = mysqli_query(
                             ): ?>
 
 
-                                <?php while (
+                            <?php while (
                                     $mechanic =
                                         mysqli_fetch_assoc(
                                             $mechanic_result
                                         )
                                 ): ?>
 
-                                    <tr>
+                            <tr>
 
-                                        <td>
+                                <td>
 
-                                            <strong>
+                                    <strong>
 
-                                                <?= htmlspecialchars(
+                                        <?= htmlspecialchars(
                                                     $mechanic[
                                                         'fullname'
                                                     ]
                                                 ); ?>
 
-                                            </strong>
+                                    </strong>
 
-                                            <?php if (
+                                    <?php if (
                                                 !empty(
                                                     $mechanic[
                                                         'specialization'
@@ -750,57 +741,54 @@ $monthly_revenue_result = mysqli_query(
                                                 )
                                             ): ?>
 
-                                                <br>
+                                    <br>
 
-                                                <small class="text-muted">
+                                    <small class="text-muted">
 
-                                                    <?= htmlspecialchars(
+                                        <?= htmlspecialchars(
                                                         $mechanic[
                                                             'specialization'
                                                         ]
                                                     ); ?>
 
-                                                </small>
+                                    </small>
 
-                                            <?php endif; ?>
+                                    <?php endif; ?>
 
-                                        </td>
+                                </td>
 
-                                        <td>
+                                <td>
 
-                                            <?= $mechanic[
+                                    <?= $mechanic[
                                                 'active_jobs'
                                             ]; ?>
 
-                                        </td>
+                                </td>
 
-                                        <td>
+                                <td>
 
-                                            <?= $mechanic[
+                                    <?= $mechanic[
                                                 'completed_jobs'
                                             ]; ?>
 
-                                        </td>
+                                </td>
 
-                                    </tr>
+                            </tr>
 
-                                <?php endwhile; ?>
+                            <?php endwhile; ?>
 
 
                             <?php else: ?>
 
-                                <tr>
+                            <tr>
 
-                                    <td
-                                        colspan="3"
-                                        class="text-center text-muted"
-                                    >
+                                <td colspan="3" class="text-center text-muted">
 
-                                        No mechanic data available.
+                                    No mechanic data available.
 
-                                    </td>
+                                </td>
 
-                                </tr>
+                            </tr>
 
                             <?php endif; ?>
 

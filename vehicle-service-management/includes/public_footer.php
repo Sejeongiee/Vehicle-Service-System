@@ -12,11 +12,9 @@
                 </h4>
 
                 <p>
-
                     Reliable automotive maintenance,
-                    professional service and convenient
-                    appointment scheduling.
-
+                    professional vehicle service and
+                    convenient online appointment scheduling.
                 </p>
 
             </div>
@@ -28,15 +26,28 @@
                     Quick Links
                 </h5>
 
-                <a href="/vehicle-service-management/">
+
+                <a href="<?= BASE_URL ?>/index.php">
                     Home
                 </a>
 
-                <a href="/vehicle-service-management/services.php">
+
+                <a href="<?= BASE_URL ?>/services.php">
                     Services
                 </a>
 
-                <a href="/vehicle-service-management/track.php">
+
+                <a href="<?= BASE_URL ?>/about.php">
+                    About Us
+                </a>
+
+
+                <a href="<?= BASE_URL ?>/contact.php">
+                    Contact
+                </a>
+
+
+                <a href="<?= BASE_URL ?>/track.php">
                     Track Appointment
                 </a>
 
@@ -50,10 +61,11 @@
                 </h5>
 
                 <p>
-                    Schedule your appointment online.
+                    Schedule your service appointment online.
                 </p>
 
-                <a href="/vehicle-service-management/appointment.php" class="footer-book-button">
+
+                <a href="<?= BASE_URL ?>/appointment.php" class="footer-book-button">
                     Make an Appointment
                 </a>
 
@@ -78,11 +90,11 @@
 </footer>
 
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<script src="/vehicle-service-management/js/public.js">
-</script>
+
+<script src="<?= BASE_URL ?>/js/public.js"></script>
+
 
 </body>
 

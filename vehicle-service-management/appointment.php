@@ -2,6 +2,22 @@
 
 include "includes/config.php";
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CSRF TOKEN
+|--------------------------------------------------------------------------
+*/
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+
 /*
 |--------------------------------------------------------------------------
 | DEFAULT VALUES
@@ -60,6 +76,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     /*
     |--------------------------------------------------------------------------
+    | CSRF CHECK
+    |--------------------------------------------------------------------------
+    */
+
+    $csrf_token = $_POST['csrf_token'] ?? '';
+
+    if (
+        empty($csrf_token) ||
+        !hash_equals(
+            $_SESSION['csrf_token'],
+            $csrf_token
+        )
+    ) {
+        $error = "Invalid form request. Please refresh the page and try again.";
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | CUSTOMER
     |--------------------------------------------------------------------------
     */
@@ -68,7 +102,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         trim($_POST['fullname'] ?? '');
 
     $email =
-        trim($_POST['email'] ?? '');
+        strtolower(
+        trim($_POST['email'] ?? ''));
 
     $phone =
         trim($_POST['phone'] ?? '');
@@ -90,9 +125,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         trim($_POST['year'] ?? '');
 
     $plate_number =
-        strtoupper(
+    strtoupper(
+        preg_replace(
+            '/\s+/',
+            ' ',
             trim($_POST['plate_number'] ?? '')
-        );
+        )
+    );
 
     $color =
         trim($_POST['color'] ?? '');
@@ -153,8 +192,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "Please complete your vehicle information.";
 
     } elseif (
-        !is_numeric($year) ||
-        strlen($year) !== 4
+        !ctype_digit($year) ||
+        intval($year) < 1900 ||
+        intval($year) > intval(date('Y')) + 1
     ) {
 
         $error =
@@ -218,24 +258,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($error === '') {
 
-        $time_value =
-            strtotime($appointment_time);
+    $allowed_times = [
+        '08:00',
+        '08:30',
+        '09:00',
+        '09:30',
+        '10:00',
+        '10:30',
+        '11:00',
+        '11:30',
+        '12:00',
+        '12:30',
+        '13:00',
+        '13:30',
+        '14:00',
+        '14:30',
+        '15:00',
+        '15:30',
+        '16:00',
+        '16:30',
+        '17:00'
+    ];
 
-        $opening_time =
-            strtotime('08:00');
 
-        $closing_time =
-            strtotime('17:00');
+    if (!in_array(
+        $appointment_time,
+        $allowed_times,
+        true
+    )) {
 
-        if (
-            $time_value < $opening_time ||
-            $time_value > $closing_time
-        ) {
+        $error =
+            "Please select a valid appointment time.";
 
-            $error =
-                "Appointments are available from 8:00 AM to 5:00 PM.";
-
-        }
+    }
 
     }
 
@@ -299,67 +354,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
+
+/*
+|--------------------------------------------------------------------------
+| CHECK APPOINTMENT CAPACITY
+|--------------------------------------------------------------------------
+*/
+
+if ($error === '') {
+
     /*
-    |--------------------------------------------------------------------------
-    | CHECK APPOINTMENT SLOT
-    |--------------------------------------------------------------------------
+    | Count mechanics that are usable.
     |
-    | For now, only one reservation is allowed at the
-    | exact same date/time.
-    |
+    | Inactive mechanics are excluded.
     */
 
-    if ($error === '') {
+    $mechanic_result = mysqli_query(
+        $conn,
+        "SELECT COUNT(*) AS total
+         FROM mechanics
+         WHERE status <> 'Inactive'"
+    );
 
-        $slot_stmt = mysqli_prepare(
-            $conn,
-            "SELECT id
+    $mechanic_row =
+        mysqli_fetch_assoc($mechanic_result);
 
-             FROM reservations
-
-             WHERE appointment_date = ?
-             AND appointment_time = ?
-             AND status NOT IN (
-                'Cancelled'
-             )
-
-             LIMIT 1"
-        );
-
-        mysqli_stmt_bind_param(
-            $slot_stmt,
-            "ss",
-            $appointment_date,
-            $appointment_time
-        );
-
-        mysqli_stmt_execute(
-            $slot_stmt
-        );
-
-        $slot_result =
-            mysqli_stmt_get_result(
-                $slot_stmt
-            );
+    $slot_capacity =
+        intval($mechanic_row['total'] ?? 0);
 
 
-        if (
-            mysqli_num_rows(
-                $slot_result
-            ) > 0
-        ) {
+    /*
+    | Fallback so bookings do not completely stop
+    | if there are temporarily no mechanics configured.
+    */
 
-            $error =
-                "That appointment time is already booked. Please choose another time.";
-
-        }
+    if ($slot_capacity < 1) {
+        $slot_capacity = 1;
+    }
 
 
-        mysqli_stmt_close(
-            $slot_stmt
-        );
+    /*
+    | Count active appointments already occupying
+    | the selected schedule.
+    */
+
+    $slot_stmt = mysqli_prepare(
+        $conn,
+        "SELECT COUNT(*) AS total
+
+         FROM reservations
+
+         WHERE appointment_date = ?
+         AND appointment_time = ?
+         AND status IN (
+            'Pending',
+            'Approved',
+            'In Progress'
+         )"
+    );
+
+
+    mysqli_stmt_bind_param(
+        $slot_stmt,
+        "ss",
+        $appointment_date,
+        $appointment_time
+    );
+
+
+    mysqli_stmt_execute($slot_stmt);
+
+    $slot_result =
+        mysqli_stmt_get_result($slot_stmt);
+
+    $slot_row =
+        mysqli_fetch_assoc($slot_result);
+
+    $booked_slots =
+        intval($slot_row['total'] ?? 0);
+
+    mysqli_stmt_close($slot_stmt);
+
+
+    if ($booked_slots >= $slot_capacity) {
+
+        $error =
+            "That appointment schedule is already full. Please select another time.";
 
     }
+
+}
 
 
     /*
@@ -788,10 +872,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             */
 
             header(
-                "Location: appointment_success.php?ref="
-                . urlencode(
-                    $reference_number
-                )
+                "Location: "
+                . BASE_URL
+                . "/appointment_success.php?ref="
+                . urlencode($reference_number)
             );
 
             exit;
@@ -852,6 +936,8 @@ include "includes/public_header.php";?>
 
 
         <form method="POST" class="appointment-form">
+
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
 
 
             <!-- CUSTOMER -->
@@ -1141,9 +1227,56 @@ include "includes/public_header.php";?>
                             Appointment Time *
                         </label>
 
-                        <input type="time" name="appointment_time" class="form-control" min="08:00" max="17:00" value="<?= htmlspecialchars(
-                                $appointment_time
-                            ); ?>" required>
+                        <select name="appointment_time" class="form-select" required>
+
+                            <option value="">
+                                Select Time
+                            </option>
+
+                            <?php
+                                $time_slots = [
+                                '08:00' => '8:00 AM',
+                                '08:30' => '8:30 AM',
+                                '09:00' => '9:00 AM',
+                                '09:30' => '9:30 AM',
+                                '10:00' => '10:00 AM',
+                                '10:30' => '10:30 AM',
+                                '11:00' => '11:00 AM',
+                                '11:30' => '11:30 AM',
+                                '12:00' => '12:00 PM',
+                                '12:30' => '12:30 PM',
+                                '13:00' => '1:00 PM',
+                                '13:30' => '1:30 PM',
+                                '14:00' => '2:00 PM',
+                                '14:30' => '2:30 PM',
+                                '15:00' => '3:00 PM',
+                                '15:30' => '3:30 PM',
+                                '16:00' => '4:00 PM',
+                                '16:30' => '4:30 PM',
+                                '17:00' => '5:00 PM'
+                            ];
+
+
+                        foreach (
+                            $time_slots as
+                            $value => $label
+                        ):
+
+                        ?>
+
+                            <option value="<?= $value; ?>" <?= $appointment_time === $value
+                            ? 'selected'
+                            : ''; 
+                            ?>>
+
+                                <?= $label; ?>
+
+                            </option>
+
+                            <?php endforeach; ?>
+
+                        </select>
+
 
                         <small class="text-muted">
                             Available from 8:00 AM to 5:00 PM.

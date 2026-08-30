@@ -5,7 +5,7 @@ include "includes/public_header.php";
 
 /*
 |--------------------------------------------------------------------------
-| ACTIVE SERVICES
+| LOAD ACTIVE SERVICES
 |--------------------------------------------------------------------------
 */
 
@@ -30,32 +30,40 @@ $services = mysqli_query(
 ?>
 
 
-<!-- HERO -->
+<!-- ============================================
+     HERO
+============================================= -->
 
 <section class="home-hero">
 
     <div class="hero-overlay"></div>
 
+
     <div class="container hero-content">
 
         <div class="hero-copy">
+
 
             <span class="hero-eyebrow">
                 COMPLETE VEHICLE CARE
             </span>
 
+
             <h1>
 
-                Professional Vehicle Care MAKE UP
-                <span>You Can Trust.</span>
+                Professional Vehicle Care
+
+                <span>
+                    You Can Trust.
+                </span>
 
             </h1>
 
 
             <p>
 
-                Reliable maintenance, professional
-                mechanics and convenient online
+                Convenient vehicle maintenance,
+                professional service and easy online
                 appointment scheduling.
 
             </p>
@@ -63,14 +71,16 @@ $services = mysqli_query(
 
             <div class="hero-actions">
 
-                <a href="appointment.php" class="hero-primary-button">
+
+                <a href="<?= BASE_URL ?>/appointment.php" class="hero-primary-button">
                     MAKE AN APPOINTMENT
                 </a>
 
 
-                <a href="services.php" class="hero-secondary-button">
+                <a href="<?= BASE_URL ?>/services.php" class="hero-secondary-button">
                     VIEW SERVICES
                 </a>
+
 
             </div>
 
@@ -82,7 +92,9 @@ $services = mysqli_query(
 
 
 
-<!-- QUICK APPOINTMENT -->
+<!-- ============================================
+     QUICK BOOKING
+============================================= -->
 
 <section class="quick-book-section">
 
@@ -90,10 +102,11 @@ $services = mysqli_query(
 
         <div class="quick-book-card">
 
+
             <div>
 
                 <span class="section-label">
-                    NEED A SERVICE?
+                    NEED VEHICLE SERVICE?
                 </span>
 
                 <h2>
@@ -103,9 +116,10 @@ $services = mysqli_query(
             </div>
 
 
-            <a href="appointment.php" class="quick-book-button">
+            <a href="<?= BASE_URL ?>/appointment.php" class="quick-book-button">
                 BOOK NOW →
             </a>
+
 
         </div>
 
@@ -115,11 +129,14 @@ $services = mysqli_query(
 
 
 
-<!-- SERVICES -->
+<!-- ============================================
+     SERVICES
+============================================= -->
 
 <section class="home-services">
 
     <div class="container">
+
 
         <div class="section-heading">
 
@@ -132,24 +149,36 @@ $services = mysqli_query(
             </h2>
 
             <p>
+
                 Professional automotive maintenance
-                for your everyday driving needs.
+                and service for your everyday
+                driving needs.
+
             </p>
 
         </div>
 
 
+
         <div class="row g-4">
 
 
-            <?php while (
-                $service = mysqli_fetch_assoc($services)
+            <?php if (
+                $services &&
+                mysqli_num_rows($services) > 0
             ): ?>
+
+
+            <?php while (
+                    $service =
+                        mysqli_fetch_assoc($services)
+                ): ?>
 
 
             <div class="col-md-6 col-lg-4">
 
                 <div class="service-card">
+
 
                     <div class="service-icon">
                         🔧
@@ -159,8 +188,10 @@ $services = mysqli_query(
                     <h3>
 
                         <?= htmlspecialchars(
-                                $service['service_name']
-                            ); ?>
+                                    $service[
+                                        'service_name'
+                                    ]
+                                ); ?>
 
                     </h3>
 
@@ -168,49 +199,68 @@ $services = mysqli_query(
                     <p>
 
                         <?= htmlspecialchars(
-                                $service['description']
-                                ?: 'Professional vehicle service and maintenance.'
-                            ); ?>
+                                    !empty(
+                                        $service[
+                                            'description'
+                                        ]
+                                    )
+                                        ? $service[
+                                            'description'
+                                        ]
+                                        : 'Professional vehicle service and maintenance.'
+                                ); ?>
 
                     </p>
 
 
                     <div class="service-meta">
 
+
                         <strong>
 
                             Starts at
+
                             ₱<?= number_format(
-                                    $service['price'],
-                                    2
-                                ); ?>
+                                        $service[
+                                            'price'
+                                        ],
+                                        2
+                                    ); ?>
 
                         </strong>
 
 
                         <?php if (
-                                !empty(
-                                    $service['estimated_duration']
-                                )
-                            ): ?>
+                                    !empty(
+                                        $service[
+                                            'estimated_duration'
+                                        ]
+                                    )
+                                ): ?>
 
                         <span>
 
                             <?= intval(
-                                        $service['estimated_duration']
-                                    ); ?>
+                                            $service[
+                                                'estimated_duration'
+                                            ]
+                                        ); ?>
+
                             mins
 
                         </span>
 
                         <?php endif; ?>
 
+
                     </div>
 
 
-                    <a href="appointment.php?service=<?= $service['id']; ?>" class="service-book-link">
+                    <a href="<?= BASE_URL ?>/appointment.php?service=<?= intval($service['id']); ?>"
+                        class="service-book-link">
                         BOOK THIS SERVICE →
                     </a>
+
 
                 </div>
 
@@ -220,16 +270,36 @@ $services = mysqli_query(
             <?php endwhile; ?>
 
 
+            <?php else: ?>
+
+
+            <div class="col-12">
+
+                <div class="alert alert-light text-center">
+
+                    No active services are currently
+                    available.
+
+                </div>
+
+            </div>
+
+
+            <?php endif; ?>
+
+
         </div>
+
 
 
         <div class="text-center mt-5">
 
-            <a href="services.php" class="view-all-services">
+            <a href="<?= BASE_URL ?>/services.php" class="view-all-services">
                 View All Services
             </a>
 
         </div>
+
 
     </div>
 
@@ -237,7 +307,9 @@ $services = mysqli_query(
 
 
 
-<!-- WHY US -->
+<!-- ============================================
+     WHY CHOOSE US
+============================================= -->
 
 <section class="why-us-section">
 
@@ -248,9 +320,11 @@ $services = mysqli_query(
 
             <div class="col-lg-6">
 
+
                 <span class="section-label">
                     WHY CHOOSE US
                 </span>
+
 
                 <h2>
                     Vehicle care made simple.
@@ -260,11 +334,12 @@ $services = mysqli_query(
                 <p class="why-description">
 
                     From preventive maintenance to
-                    diagnostics and repairs, our goal is
-                    to provide convenient and dependable
-                    vehicle service.
+                    diagnostics and repairs, our system
+                    helps make scheduling and monitoring
+                    vehicle service convenient.
 
                 </p>
+
 
 
                 <div class="why-grid">
@@ -272,7 +347,9 @@ $services = mysqli_query(
 
                     <div class="why-item">
 
-                        <span>✓</span>
+                        <span>
+                            ✓
+                        </span>
 
                         <div>
 
@@ -281,8 +358,8 @@ $services = mysqli_query(
                             </strong>
 
                             <p>
-                                Skilled vehicle maintenance
-                                and repair.
+                                Reliable vehicle maintenance
+                                and repair services.
                             </p>
 
                         </div>
@@ -290,9 +367,12 @@ $services = mysqli_query(
                     </div>
 
 
+
                     <div class="why-item">
 
-                        <span>✓</span>
+                        <span>
+                            ✓
+                        </span>
 
                         <div>
 
@@ -301,8 +381,11 @@ $services = mysqli_query(
                             </strong>
 
                             <p>
-                                Review available services
-                                and estimated prices.
+
+                                View available services and
+                                their estimated prices before
+                                booking.
+
                             </p>
 
                         </div>
@@ -310,9 +393,12 @@ $services = mysqli_query(
                     </div>
 
 
+
                     <div class="why-item">
 
-                        <span>✓</span>
+                        <span>
+                            ✓
+                        </span>
 
                         <div>
 
@@ -321,8 +407,10 @@ $services = mysqli_query(
                             </strong>
 
                             <p>
-                                Schedule your appointment
-                                online in minutes.
+
+                                Schedule a service appointment
+                                online in just a few steps.
+
                             </p>
 
                         </div>
@@ -330,9 +418,12 @@ $services = mysqli_query(
                     </div>
 
 
+
                     <div class="why-item">
 
-                        <span>✓</span>
+                        <span>
+                            ✓
+                        </span>
 
                         <div>
 
@@ -341,9 +432,11 @@ $services = mysqli_query(
                             </strong>
 
                             <p>
-                                Check your appointment
-                                status using your reference
+
+                                Track appointment progress
+                                using your unique reference
                                 number.
+
                             </p>
 
                         </div>
@@ -353,12 +446,22 @@ $services = mysqli_query(
 
                 </div>
 
+
             </div>
+
 
 
             <div class="col-lg-6">
 
-                <img src="images/cover.jpg" alt="Vehicle Service" class="why-image">
+
+                <!--
+                    cover.jpg did not exist in your upload.
+                    hero.jpg DOES exist, so we'll use it
+                    temporarily.
+                -->
+
+                <img src="<?= BASE_URL ?>/images/hero.jpg" alt="Vehicle Service" class="why-image">
+
 
             </div>
 
@@ -371,27 +474,34 @@ $services = mysqli_query(
 
 
 
-<!-- CTA -->
+<!-- ============================================
+     FINAL CALL TO ACTION
+============================================= -->
 
 <section class="booking-cta">
 
     <div class="container text-center">
 
+
         <span class="section-label">
             READY TO GET STARTED?
         </span>
+
 
         <h2>
             Your vehicle deserves proper care.
         </h2>
 
+
         <p>
             Schedule your service appointment today.
         </p>
 
-        <a href="appointment.php" class="cta-button">
+
+        <a href="<?= BASE_URL ?>/appointment.php" class="cta-button">
             MAKE AN APPOINTMENT
         </a>
+
 
     </div>
 

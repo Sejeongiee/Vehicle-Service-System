@@ -6,8 +6,7 @@ $total_customers = mysqli_fetch_assoc(
     mysqli_query(
         $conn,
         "SELECT COUNT(*) AS total
-         FROM users
-         WHERE role = 'customer'"
+         FROM customers"
     )
 )['total'];
 

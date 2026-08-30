@@ -95,7 +95,7 @@ $stmt = mysqli_prepare(
         r.service_type,
         r.status AS reservation_status,
 
-        u.fullname AS customer_name,
+        c.fullname AS customer_name,
 
         v.brand,
         v.model,
@@ -106,8 +106,8 @@ $stmt = mysqli_prepare(
      INNER JOIN reservations r
         ON p.reservation_id = r.id
 
-     INNER JOIN users u
-        ON r.user_id = u.id
+     LEFT JOIN customers c
+        ON r.customer_id = c.id
 
      INNER JOIN vehicles v
         ON r.vehicle_id = v.id
@@ -160,10 +160,7 @@ include "includes/admin_header.php";
 
         </div>
 
-        <a
-            href="payments.php"
-            class="btn btn-secondary"
-        >
+        <a href="payments.php" class="btn btn-secondary">
             ← Payments
         </a>
 
@@ -231,11 +228,11 @@ include "includes/admin_header.php";
                     )
                 ): ?>
 
-                    <p class="mb-0">
+                <p class="mb-0">
 
-                        <strong>Paid At</strong><br>
+                    <strong>Paid At</strong><br>
 
-                        <?= date(
+                    <?= date(
                             'M d, Y h:i A',
                             strtotime(
                                 $payment[
@@ -244,7 +241,7 @@ include "includes/admin_header.php";
                             )
                         ); ?>
 
-                    </p>
+                </p>
 
                 <?php endif; ?>
 
@@ -317,61 +314,46 @@ include "includes/admin_header.php";
             === 'Pending'
         ): ?>
 
-            <div class="col-12">
+        <div class="col-12">
 
-                <div class="dashboard-card">
+            <div class="dashboard-card">
 
-                    <h4 class="mb-4">
-                        Payment Actions
-                    </h4>
-
-
-                    <div class="d-flex gap-2">
+                <h4 class="mb-4">
+                    Payment Actions
+                </h4>
 
 
-                        <form method="POST">
-
-                            <input
-                                type="hidden"
-                                name="action"
-                                value="paid"
-                            >
-
-                            <button
-                                type="submit"
-                                class="btn btn-success"
-                                onclick="return confirm('Mark this payment as paid?');"
-                            >
-                                ✓ Mark as Paid
-                            </button>
-
-                        </form>
+                <div class="d-flex gap-2">
 
 
-                        <form method="POST">
+                    <form method="POST">
 
-                            <input
-                                type="hidden"
-                                name="action"
-                                value="cancel"
-                            >
+                        <input type="hidden" name="action" value="paid">
 
-                            <button
-                                type="submit"
-                                class="btn btn-danger"
-                                onclick="return confirm('Cancel this payment?');"
-                            >
-                                Cancel Payment
-                            </button>
+                        <button type="submit" class="btn btn-success"
+                            onclick="return confirm('Mark this payment as paid?');">
+                            ✓ Mark as Paid
+                        </button>
 
-                        </form>
+                    </form>
 
 
-                    </div>
+                    <form method="POST">
+
+                        <input type="hidden" name="action" value="cancel">
+
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Cancel this payment?');">
+                            Cancel Payment
+                        </button>
+
+                    </form>
+
 
                 </div>
 
             </div>
+
+        </div>
 
         <?php endif; ?>
 

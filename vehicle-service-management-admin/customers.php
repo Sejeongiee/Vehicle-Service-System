@@ -2,84 +2,38 @@
 
 include "includes/admin_header.php";
 
-
-/*
-|--------------------------------------------------------------------------
-| SEARCH
-|--------------------------------------------------------------------------
-*/
-
 $search = trim($_GET['search'] ?? '');
-
-
-/*
-|--------------------------------------------------------------------------
-| CUSTOMER QUERY
-|--------------------------------------------------------------------------
-*/
+$search_safe = mysqli_real_escape_string($conn, $search);
 
 $query = "
     SELECT
-        u.id,
-        u.fullname,
-        u.email,
-        u.created_at,
-
+        c.id,
+        c.fullname,
+        c.email,
+        c.phone,
+        c.address,
+        c.created_at,
         COUNT(DISTINCT v.id) AS vehicle_count,
-
         COUNT(DISTINCT r.id) AS reservation_count
-
-    FROM users u
-
-    LEFT JOIN vehicles v
-        ON u.id = v.user_id
-
-    LEFT JOIN reservations r
-        ON u.id = r.user_id
-
-    WHERE u.role = 'customer'
+    FROM customers c
+    LEFT JOIN vehicles v ON c.id = v.customer_id
+    LEFT JOIN reservations r ON c.id = r.customer_id
 ";
 
-
-/*
-|--------------------------------------------------------------------------
-| SEARCH FILTER
-|--------------------------------------------------------------------------
-*/
-
-if (!empty($search)) {
-
-    $search_safe = mysqli_real_escape_string(
-        $conn,
-        $search
-    );
-
+if ($search !== '') {
     $query .= "
-        AND (
-            u.fullname LIKE '%$search_safe%'
-            OR u.email LIKE '%$search_safe%'
-        )
+        WHERE c.fullname LIKE '%$search_safe%'
+           OR c.email LIKE '%$search_safe%'
+           OR c.phone LIKE '%$search_safe%'
     ";
 }
 
-
 $query .= "
-
-    GROUP BY
-        u.id,
-        u.fullname,
-        u.email,
-        u.created_at
-
-    ORDER BY
-        u.created_at DESC
+    GROUP BY c.id, c.fullname, c.email, c.phone, c.address, c.created_at
+    ORDER BY c.created_at DESC
 ";
 
-
-$result = mysqli_query(
-    $conn,
-    $query
-);
+$result = mysqli_query($conn, $query);
 
 ?>
 
@@ -111,10 +65,7 @@ $result = mysqli_query(
 
     <div class="dashboard-card mb-4">
 
-        <form
-            method="GET"
-            class="row g-3"
-        >
+        <form method="GET" class="row g-3">
 
             <div class="col-md-9">
 
@@ -122,23 +73,15 @@ $result = mysqli_query(
                     Search Customer
                 </label>
 
-                <input
-                    type="text"
-                    name="search"
-                    class="form-control"
-                    placeholder="Search by name or email..."
-                    value="<?= htmlspecialchars($search); ?>"
-                >
+                <input type="text" name="search" class="form-control" placeholder="Search by name or email..."
+                    value="<?= htmlspecialchars($search); ?>">
 
             </div>
 
 
             <div class="col-md-3 d-flex align-items-end">
 
-                <button
-                    type="submit"
-                    class="btn btn-primary w-100"
-                >
+                <button type="submit" class="btn btn-primary w-100">
 
                     🔍 Search
 
@@ -164,14 +107,11 @@ $result = mysqli_query(
 
             <?php if (!empty($search)): ?>
 
-                <a
-                    href="customers.php"
-                    class="btn btn-sm btn-outline-secondary"
-                >
+            <a href="customers.php" class="btn btn-sm btn-outline-secondary">
 
-                    Clear Search
+                Clear Search
 
-                </a>
+            </a>
 
             <?php endif; ?>
 
@@ -212,95 +152,95 @@ $result = mysqli_query(
                     ): ?>
 
 
-                        <?php while (
+                    <?php while (
                             $customer =
                             mysqli_fetch_assoc($result)
                         ): ?>
 
-                            <tr>
+                    <tr>
 
 
-                                <!-- ID -->
+                        <!-- ID -->
 
-                                <td>
+                        <td>
 
-                                    <strong>
+                            <strong>
 
-                                        #<?= $customer['id']; ?>
+                                #<?= $customer['id']; ?>
 
-                                    </strong>
+                            </strong>
 
-                                </td>
+                        </td>
 
 
 
-                                <!-- CUSTOMER -->
+                        <!-- CUSTOMER -->
 
-                                <td>
+                        <td>
 
-                                    <strong>
+                            <strong>
 
-                                        <?= htmlspecialchars(
+                                <?= htmlspecialchars(
                                             $customer[
                                                 'fullname'
                                             ]
                                         ); ?>
 
-                                    </strong>
+                            </strong>
 
-                                </td>
+                        </td>
 
 
 
-                                <!-- EMAIL -->
+                        <!-- EMAIL -->
 
-                                <td>
+                        <td>
 
-                                    <?= htmlspecialchars(
+                            <?= htmlspecialchars(
                                         $customer['email']
                                     ); ?>
 
-                                </td>
+                        </td>
 
 
 
-                                <!-- VEHICLES -->
+                        <!-- VEHICLES -->
 
-                                <td>
+                        <td>
 
-                                    <span class="badge text-bg-primary">
+                            <span class="badge text-bg-primary">
 
-                                        <?= $customer[
+                                <?= $customer[
                                             'vehicle_count'
                                         ]; ?>
 
-                                    </span>
+                            </span>
 
-                                </td>
+                        </td>
 
 
 
-                                <!-- RESERVATIONS -->
+                        <!-- RESERVATIONS -->
 
-                                <td>
+                        <td>
 
-                                    <span class="badge text-bg-secondary">
+                            <span class="badge text-bg-secondary">
 
-                                        <?= $customer[
+                                <?= $customer[
                                             'reservation_count'
                                         ]; ?>
 
-                                    </span>
+                            </span>
 
-                                </td>
+                        </td>
 
 
 
-                                <!-- REGISTERED -->
+                        <!-- REGISTERED -->
 
-                                <td>
+                        <td>
 
-                                    <?= date(
+                            <?= date(
                                         'M d, Y',
                                         strtotime(
                                             $customer[
@@ -309,61 +249,58 @@ $result = mysqli_query(
                                         )
                                     ); ?>
 
-                                </td>
+                        </td>
 
 
-                            </tr>
+                    </tr>
 
 
-                        <?php endwhile; ?>
+                    <?php endwhile; ?>
 
 
                     <?php else: ?>
 
 
-                        <tr>
+                    <tr>
 
-                            <td
-                                colspan="6"
-                                class="text-center py-5"
-                            >
+                        <td colspan="6" class="text-center py-5">
 
-                                <div class="fs-1 mb-3">
-                                    👤
-                                </div>
+                            <div class="fs-1 mb-3">
+                                👤
+                            </div>
 
 
-                                <h5>
-                                    No Customers Found
-                                </h5>
+                            <h5>
+                                No Customers Found
+                            </h5>
 
 
-                                <?php if (
+                            <?php if (
                                     !empty($search)
                                 ): ?>
 
-                                    <p class="text-muted mb-0">
+                            <p class="text-muted mb-0">
 
-                                        No customer matches
-                                        your search.
+                                No customer matches
+                                your search.
 
-                                    </p>
+                            </p>
 
-                                <?php else: ?>
+                            <?php else: ?>
 
-                                    <p class="text-muted mb-0">
+                            <p class="text-muted mb-0">
 
-                                        There are currently
-                                        no registered customers.
+                                There are currently
+                                no registered customers.
 
-                                    </p>
+                            </p>
 
-                                <?php endif; ?>
+                            <?php endif; ?>
 
 
-                            </td>
+                        </td>
 
-                        </tr>
+                    </tr>
 
 
                     <?php endif; ?>

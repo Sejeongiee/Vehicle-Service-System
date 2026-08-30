@@ -9,42 +9,42 @@ include "includes/admin_header.php";
 |--------------------------------------------------------------------------
 */
 
-$query = "
-    SELECT
+$reservations = mysqli_query(
+    $conn,
+    "SELECT
         r.id,
+        r.reference_number,
         r.service_type,
         r.appointment_date,
         r.appointment_time,
-        r.remarks,
         r.status,
         r.created_at,
+
+        c.fullname AS customer_name,
+        c.email AS customer_email,
+        c.phone AS customer_phone,
 
         v.brand,
         v.model,
         v.plate_number,
 
-        u.fullname AS customer_name
+        m.fullname AS mechanic_name
 
-    FROM reservations r
+     FROM reservations r
 
-    INNER JOIN vehicles v
+     LEFT JOIN customers c
+        ON r.customer_id = c.id
+
+     LEFT JOIN vehicles v
         ON r.vehicle_id = v.id
 
-    INNER JOIN users u
-        ON r.user_id = u.id
+     LEFT JOIN mechanics m
+        ON r.mechanic_id = m.id
 
-    ORDER BY
-        CASE
-            WHEN r.status = 'Pending' THEN 1
-            WHEN r.status = 'Approved' THEN 2
-            WHEN r.status = 'In Progress' THEN 3
-            WHEN r.status = 'Completed' THEN 4
-            WHEN r.status = 'Cancelled' THEN 5
-            ELSE 6
-        END,
-        r.appointment_date ASC,
-        r.appointment_time ASC
-";
+     ORDER BY
+        r.appointment_date DESC,
+        r.appointment_time DESC"
+);
 
 
 $result = mysqli_query($conn, $query);
@@ -110,253 +110,227 @@ $result = mysqli_query($conn, $query);
                 <thead>
 
                     <tr>
-
-                        <th>#</th>
-
+                        <th>Reference</th>
                         <th>Customer</th>
-
                         <th>Vehicle</th>
-
                         <th>Service</th>
-
-                        <th>Appointment</th>
-
+                        <th>Schedule</th>
+                        <th>Mechanic</th>
                         <th>Status</th>
-
                         <th>Action</th>
-
                     </tr>
 
                 </thead>
 
-
                 <tbody>
 
                     <?php if (
-                        $result &&
-                        mysqli_num_rows($result) > 0
-                    ): ?>
+            $reservations &&
+            mysqli_num_rows($reservations) > 0
+        ): ?>
 
+                    <?php while (
+                $reservation =
+                    mysqli_fetch_assoc($reservations)
+            ): ?>
 
-                        <?php while (
-                            $reservation =
-                            mysqli_fetch_assoc($result)
+                    <?php
+
+                $status_class = 'secondary';
+
+                switch ($reservation['status']) {
+
+                    case 'Pending':
+                        $status_class = 'warning';
+                        break;
+
+                    case 'Approved':
+                        $status_class = 'primary';
+                        break;
+
+                    case 'In Progress':
+                        $status_class = 'info';
+                        break;
+
+                    case 'Completed':
+                        $status_class = 'success';
+                        break;
+
+                    case 'Cancelled':
+                    case 'Rejected':
+                        $status_class = 'danger';
+                        break;
+
+                }
+
+                ?>
+
+                    <tr>
+
+                        <td>
+
+                            <?php if (
+                            !empty(
+                                $reservation[
+                                    'reference_number'
+                                ]
+                            )
                         ): ?>
 
-                            <?php
+                            <strong>
+                                <?= htmlspecialchars(
+                                    $reservation[
+                                        'reference_number'
+                                    ]
+                                ); ?>
+                            </strong>
 
-                            $status =
-                                $reservation['status'];
+                            <?php else: ?>
 
-                            $status_class = 'secondary';
+                            <span class="text-muted">
+                                Legacy #<?= $reservation['id']; ?>
+                            </span>
 
-                            if (
-                                $status === 'Pending'
-                            ) {
+                            <?php endif; ?>
 
-                                $status_class = 'warning';
+                        </td>
 
-                            } elseif (
-                                $status === 'Approved'
-                            ) {
 
-                                $status_class = 'primary';
+                        <td>
 
-                            } elseif (
-                                $status === 'In Progress'
-                            ) {
+                            <strong>
+                                <?= htmlspecialchars(
+                                $reservation[
+                                    'customer_name'
+                                ] ?? 'Unknown'
+                            ); ?>
+                            </strong>
 
-                                $status_class = 'info';
+                            <br>
 
-                            } elseif (
-                                $status === 'Completed'
-                            ) {
+                            <small class="text-muted">
 
-                                $status_class = 'success';
+                                <?= htmlspecialchars(
+                                $reservation[
+                                    'customer_email'
+                                ] ?? ''
+                            ); ?>
 
-                            } elseif (
-                                $status === 'Cancelled'
-                            ) {
+                            </small>
 
-                                $status_class = 'danger';
+                        </td>
 
-                            }
 
-                            ?>
+                        <td>
 
+                            <?= htmlspecialchars(
+                            $reservation['brand'] ?? ''
+                        ); ?>
 
-                            <tr>
+                            <?= htmlspecialchars(
+                            $reservation['model'] ?? ''
+                        ); ?>
 
-                                <!-- ID -->
+                            <br>
 
-                                <td>
+                            <small class="text-muted">
 
-                                    <strong>
-                                        #<?= $reservation['id']; ?>
-                                    </strong>
+                                <?= htmlspecialchars(
+                                $reservation[
+                                    'plate_number'
+                                ] ?? ''
+                            ); ?>
 
-                                </td>
+                            </small>
 
+                        </td>
 
-                                <!-- CUSTOMER -->
 
-                                <td>
+                        <td>
 
-                                    <?= htmlspecialchars(
-                                        $reservation[
-                                            'customer_name'
-                                        ]
-                                    ); ?>
+                            <?= htmlspecialchars(
+                            $reservation['service_type']
+                        ); ?>
 
-                                </td>
+                        </td>
 
 
-                                <!-- VEHICLE -->
+                        <td>
 
-                                <td>
+                            <?= date(
+                            'M d, Y',
+                            strtotime(
+                                $reservation[
+                                    'appointment_date'
+                                ]
+                            )
+                        ); ?>
 
-                                    <strong>
+                            <br>
 
-                                        <?= htmlspecialchars(
-                                            $reservation[
-                                                'brand'
-                                            ]
-                                        ); ?>
+                            <small class="text-muted">
 
-                                        <?= htmlspecialchars(
-                                            $reservation[
-                                                'model'
-                                            ]
-                                        ); ?>
+                                <?= date(
+                                'h:i A',
+                                strtotime(
+                                    $reservation[
+                                        'appointment_time'
+                                    ]
+                                )
+                            ); ?>
 
-                                    </strong>
+                            </small>
 
-                                    <br>
+                        </td>
 
-                                    <small class="text-muted">
 
-                                        <?= htmlspecialchars(
-                                            $reservation[
-                                                'plate_number'
-                                            ]
-                                        ); ?>
+                        <td>
 
-                                    </small>
+                            <?= !empty(
+                            $reservation['mechanic_name']
+                        )
+                            ? htmlspecialchars(
+                                $reservation[
+                                    'mechanic_name'
+                                ]
+                            )
+                            : '<span class="text-muted">Not assigned</span>'; ?>
 
-                                </td>
+                        </td>
 
 
-                                <!-- SERVICE -->
+                        <td>
 
-                                <td>
+                            <span class="badge text-bg-<?= $status_class; ?>">
+                                <?= htmlspecialchars(
+                                $reservation['status']
+                            ); ?>
+                            </span>
 
-                                    <?= htmlspecialchars(
-                                        $reservation[
-                                            'service_type'
-                                        ]
-                                    ); ?>
+                        </td>
 
-                                </td>
 
+                        <td>
 
-                                <!-- APPOINTMENT -->
+                            <a href="reservation_view.php?id=<?= $reservation['id']; ?>" class="btn btn-sm btn-dark">
+                                View
+                            </a>
 
-                                <td>
+                        </td>
 
-                                    <?= date(
-                                        'M d, Y',
-                                        strtotime(
-                                            $reservation[
-                                                'appointment_date'
-                                            ]
-                                        )
-                                    ); ?>
+                    </tr>
 
-                                    <br>
-
-                                    <small class="text-muted">
-
-                                        <?= date(
-                                            'h:i A',
-                                            strtotime(
-                                                $reservation[
-                                                    'appointment_time'
-                                                ]
-                                            )
-                                        ); ?>
-
-                                    </small>
-
-                                </td>
-
-
-                                <!-- STATUS -->
-
-                                <td>
-
-                                    <span
-                                        class="badge text-bg-<?= $status_class; ?>"
-                                    >
-
-                                        <?= htmlspecialchars(
-                                            $status
-                                        ); ?>
-
-                                    </span>
-
-                                </td>
-
-
-                                <!-- ACTION -->
-
-                                <td>
-
-                                    <a
-                                        href="reservation_view.php?id=<?= $reservation['id']; ?>"
-                                        class="btn btn-sm btn-primary"
-                                    >
-
-                                        View
-
-                                    </a>
-
-                                </td>
-
-                            </tr>
-
-
-                        <?php endwhile; ?>
-
+                    <?php endwhile; ?>
 
                     <?php else: ?>
 
+                    <tr>
 
-                        <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            No appointments found.
+                        </td>
 
-                            <td
-                                colspan="7"
-                                class="text-center py-5"
-                            >
-
-                                <div class="fs-1 mb-3">
-                                    📅
-                                </div>
-
-                                <h5>
-                                    No Reservations
-                                </h5>
-
-                                <p class="text-muted mb-0">
-
-                                    There are currently no
-                                    service reservations.
-
-                                </p>
-
-                            </td>
-
-                        </tr>
-
+                    </tr>
 
                     <?php endif; ?>
 

@@ -1029,3 +1029,327 @@ body {
     flex-shrink: 0;
   }
 }
+
+/* ==============================
+   INNER PAGE HERO
+============================== */
+
+.inner-hero {
+  padding: 95px 0 80px;
+
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.72)),
+    url("../images/hero.jpg") center / cover no-repeat;
+
+  color: white;
+}
+
+.inner-hero h1 {
+  max-width: 750px;
+
+  margin: 12px 0;
+
+  font-size: clamp(38px, 5vw, 58px);
+
+  font-weight: 700;
+}
+
+.inner-hero p {
+  max-width: 680px;
+
+  margin: 0;
+
+  color: #d4d4d4;
+
+  line-height: 1.8;
+}
+
+/* ==============================
+   SERVICES PAGE
+============================== */
+
+.services-page {
+  padding: 90px 0;
+
+  background: var(--light);
+}
+
+/* ==============================
+   ABOUT PAGE
+============================== */
+
+.about-page {
+  padding: 100px 0;
+}
+
+.about-page h2 {
+  margin: 12px 0 25px;
+
+  font-size: 42px;
+
+  font-weight: 700;
+}
+
+.about-page p {
+  color: var(--muted);
+
+  line-height: 1.9;
+}
+
+.about-image {
+  width: 100%;
+
+  height: 500px;
+
+  object-fit: cover;
+}
+
+.about-book-button {
+  display: inline-block;
+
+  margin-top: 15px;
+
+  padding: 15px 25px;
+
+  background: var(--primary);
+
+  color: white;
+
+  text-decoration: none;
+
+  font-weight: 700;
+}
+
+.about-book-button:hover {
+  background: var(--primary-dark);
+
+  color: white;
+}
+
+.about-features {
+  padding: 90px 0;
+
+  background: var(--light);
+}
+
+.about-feature-card {
+  height: 100%;
+
+  padding: 35px;
+
+  background: white;
+
+  border-bottom: 4px solid transparent;
+
+  transition: 0.25s ease;
+}
+
+.about-feature-card:hover {
+  transform: translateY(-5px);
+
+  border-color: var(--primary);
+}
+
+.about-feature-number {
+  margin-bottom: 20px;
+
+  color: var(--primary);
+
+  font-size: 35px;
+
+  font-weight: 700;
+}
+
+.about-feature-card h3 {
+  font-size: 21px;
+
+  font-weight: 700;
+}
+
+.about-feature-card p {
+  margin-bottom: 0;
+
+  color: var(--muted);
+
+  line-height: 1.7;
+}
+
+/* ==============================
+   CONTACT PAGE
+============================== */
+
+.contact-page {
+  padding: 100px 0;
+
+  background: var(--light);
+}
+
+.contact-page h2 {
+  margin: 12px 0 20px;
+
+  font-size: 40px;
+
+  font-weight: 700;
+}
+
+.contact-description {
+  color: var(--muted);
+
+  line-height: 1.8;
+}
+
+.contact-info-card,
+.contact-message-card {
+  margin-top: 30px;
+
+  padding: 35px;
+
+  background: white;
+
+  border: 1px solid var(--border);
+}
+
+.contact-info-item {
+  display: flex;
+
+  gap: 18px;
+
+  padding: 25px 0;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.contact-info-item:first-child {
+  padding-top: 0;
+}
+
+.contact-info-item:last-child {
+  padding-bottom: 0;
+
+  border-bottom: 0;
+}
+
+.contact-icon {
+  width: 50px;
+
+  height: 50px;
+
+  display: grid;
+
+  place-items: center;
+
+  flex-shrink: 0;
+
+  background: var(--dark);
+
+  font-size: 21px;
+}
+
+.contact-info-item strong {
+  display: block;
+
+  margin-bottom: 5px;
+}
+
+.contact-info-item p {
+  margin-bottom: 8px;
+
+  color: var(--muted);
+
+  font-size: 14px;
+}
+
+.contact-info-item a {
+  color: var(--primary);
+
+  text-decoration: none;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.contact-message-card {
+  margin-top: 0;
+
+  min-height: 100%;
+}
+
+.contact-message-card h3 {
+  font-size: 26px;
+
+  font-weight: 700;
+}
+
+.contact-message-card > p {
+  color: var(--muted);
+
+  line-height: 1.8;
+}
+
+.contact-reference-box {
+  margin-top: 30px;
+
+  padding: 35px;
+
+  background: var(--dark);
+
+  color: white;
+}
+
+.contact-reference-box span,
+.contact-reference-box strong {
+  display: block;
+}
+
+.contact-reference-box span {
+  color: #bcbcbc;
+
+  font-size: 13px;
+}
+
+.contact-reference-box strong {
+  margin: 8px 0 25px;
+
+  font-size: 22px;
+}
+
+.contact-reference-box a {
+  display: inline-block;
+
+  padding: 13px 20px;
+
+  background: var(--primary);
+
+  color: white;
+
+  text-decoration: none;
+
+  font-weight: 700;
+}
+
+/* ==============================
+   GENERAL RESPONSIVE
+============================== */
+
+@media (max-width: 767px) {
+  .inner-hero {
+    padding: 70px 0;
+  }
+
+  .about-page,
+  .about-features,
+  .contact-page,
+  .services-page {
+    padding: 70px 0;
+  }
+
+  .about-page h2,
+  .contact-page h2 {
+    font-size: 34px;
+  }
+
+  .about-image {
+    height: 350px;
+  }
+}

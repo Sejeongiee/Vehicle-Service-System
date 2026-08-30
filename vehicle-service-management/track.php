@@ -1,9 +1,27 @@
 <?php
 
 include "includes/config.php";
-include "includes/public_header.php";
 
-$reference = trim($_GET['ref'] ?? '');
+
+$reference =
+    strtoupper(
+        trim($_GET['ref'] ?? '')
+    );
+
+$contact =
+    trim($_GET['contact'] ?? '');
+
+
+$error = "";
+$appointment = null;
+
+
+/*
+|--------------------------------------------------------------------------
+| PROCESS FIRST
+|--------------------------------------------------------------------------
+*/
+
 $contact = trim($_GET['contact'] ?? '');
 
 $error = "";
@@ -24,7 +42,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
     $contact =
-        trim($_POST['contact'] ?? '');
+    trim($_POST['contact'] ?? '');
+
+
+    if (filter_var(
+        $contact,
+        FILTER_VALIDATE_EMAIL
+    )) {
+
+        $contact =
+            strtolower($contact);
+
+}
 
 
     if ($reference === '' || $contact === '') {
@@ -138,6 +167,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 | we'll show it in the form automatically.
 |
 */
+
+?>
+
+<?php
+
+include "includes/public_header.php";
 
 ?>
 
@@ -772,7 +807,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="track-actions">
 
-                <a href="appointment.php" class="track-secondary-button">
+                <a href="<?= BASE_URL ?>/appointment.php" class="track-secondary-button">
                     BOOK ANOTHER APPOINTMENT
                 </a>
 
