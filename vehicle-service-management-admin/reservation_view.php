@@ -79,7 +79,17 @@ include "includes/admin_header.php";
         <div>
 
             <h2>
-                Reservation #<?= $reservation['id']; ?>
+
+                <?php if (!empty($reservation['reference_number'])): ?>
+
+                <?= htmlspecialchars($reservation['reference_number']); ?>
+
+                <?php else: ?>
+
+                Legacy Reservation #<?= intval($reservation['id']); ?>
+
+                <?php endif; ?>
+
             </h2>
 
             <p class="text-muted mb-0">
@@ -138,6 +148,23 @@ include "includes/admin_header.php";
 
                         <?= htmlspecialchars(
                             $reservation['customer_email']
+                        ); ?>
+
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="text-muted">
+                        Phone
+                    </label>
+
+                    <div>
+
+                        <?= htmlspecialchars(
+                            $reservation['customer_phone']
+                            ?? '—'
                         ); ?>
 
                     </div>
@@ -523,7 +550,7 @@ include "includes/admin_header.php";
 
                 <?php if ($status === 'Approved'): ?>
 
-                <form method="POST" action="assign_mechanic.php">
+                <form method="POST" action="<?=ADMIN_BASE_URL ?>/assign_mechanic.php">
 
                     <input type="hidden" name="reservation_id" value="<?= $reservation['id']; ?>">
 
