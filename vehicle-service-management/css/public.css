@@ -25,6 +25,60 @@ body {
   color: var(--text);
 }
 
+/* MODEL */
+.makes-models-section {
+    padding: 60px 20px;
+    background: #fff;
+    text-align: center;
+}
+
+.makes-models-section h2 {
+    color: #000000;
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 50px;
+}
+
+.makes-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 40px 50px;
+    align-items: center;
+    justify-items: center;
+}
+
+.make-logo {
+    width: 160px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.make-logo img {
+    max-width: 140px;
+    max-height: 80px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.see-all-makes {
+    display: inline-block;
+    margin-top: 45px;
+    padding: 16px 60px;
+    border: 1.5px solid #001f8f;
+    border-radius: 30px;
+    color: #001f8f;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.see-all-makes:hover {
+    background: #001f8f;
+    color: #fff;
+}
 /* NAVIGATION */
 
 .public-navbar {

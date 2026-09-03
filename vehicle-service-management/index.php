@@ -471,6 +471,90 @@ $services = mysqli_query(
 
 </section>
 
+</section>
+
+
+<!-- ============================================
+     MAKES AND MODELS
+============================================= -->
+
+<section class="makes-models-section">
+
+    <div class="container">
+
+        <h2 style="color: #f80303;">YOUR VEHICLE, OUR EXPERTISE</h2>
+
+        <div class="makes-grid">
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/toyota.png" alt="Toyota">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/honda.png" alt="Honda">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/mitsubishi.png" alt="Mitsubishi">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/hyundai.png" alt="Hyundai">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/nissan.png" alt="Nissan">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/kia.png" alt="Kia">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/suzuki.png" alt="Suzuki">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/ford.png" alt="Ford">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/mazda.png" alt="Mazda">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/isuzu.png" alt="Isuzu">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/foton.png" alt="Foton">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/hino.png" alt="Hino">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/volkswagen.png" alt="Volkswagen">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/chevrolet.png" alt="Chevrolet">
+            </div>
+
+            <div class="make-logo">
+                <img src="<?= BASE_URL ?>/images/subaru.png" alt="Subaru">
+            </div>
+
+        </div>
+<!--
+        <a href="<?= BASE_URL ?>/makes-models.php" class="see-all-makes">
+            See All Makes And Models
+        </a>
+            -->
+    </div>
+
+</section>
 
 
 <!-- ============================================
