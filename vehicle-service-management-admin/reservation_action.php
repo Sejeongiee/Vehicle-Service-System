@@ -6,28 +6,59 @@ include_once __DIR__ . "/includes/admin_auth.php";
 
 /*
 |--------------------------------------------------------------------------
-| GET REQUEST VALUES
+| POST ONLY
 |--------------------------------------------------------------------------
 */
 
-$reservation_id = intval(
-    $_POST['reservation_id'] ?? 0
-);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
-$action = $_POST['action'] ?? '';
+    header(
+        "Location: "
+        . ADMIN_BASE_URL
+        . "/reservations.php"
+    );
+
+    exit;
+}
 
 
 /*
 |--------------------------------------------------------------------------
-| VALIDATE REQUEST
+| GET REQUEST
 |--------------------------------------------------------------------------
 */
 
-if ($reservation_id <= 0 || empty($action)) {
+$reservation_id =
+    intval($_POST['reservation_id'] ?? 0);
 
-    header("Location: reservations.php");
+$action =
+    trim($_POST['action'] ?? '');
+
+
+$allowed_actions = [
+    'approve',
+    'cancel',
+    'start',
+    'complete'
+];
+
+
+if (
+    $reservation_id <= 0 ||
+    !in_array(
+        $action,
+        $allowed_actions,
+        true
+    )
+) {
+
+    header(
+        "Location: "
+        . ADMIN_BASE_URL
+        . "/reservations.php"
+    );
+
     exit;
-
 }
 
 
@@ -39,11 +70,18 @@ if ($reservation_id <= 0 || empty($action)) {
 
 $stmt = mysqli_prepare(
     $conn,
-    "SELECT id, status, mechanic_id
+    "SELECT
+        id,
+        status,
+        mechanic_id
+
      FROM reservations
+
      WHERE id = ?
+
      LIMIT 1"
 );
+
 
 mysqli_stmt_bind_param(
     $stmt,
@@ -51,25 +89,40 @@ mysqli_stmt_bind_param(
     $reservation_id
 );
 
+
 mysqli_stmt_execute($stmt);
 
-$result = mysqli_stmt_get_result($stmt);
 
-$reservation = mysqli_fetch_assoc($result);
+$result =
+    mysqli_stmt_get_result($stmt);
+
+
+$reservation =
+    mysqli_fetch_assoc($result);
+
 
 mysqli_stmt_close($stmt);
 
 
 if (!$reservation) {
 
-    header("Location: reservations.php");
-    exit;
+    header(
+        "Location: "
+        . ADMIN_BASE_URL
+        . "/reservations.php"
+    );
 
+    exit;
 }
 
 
-$current_status = $reservation['status'];
-$mechanic_id = $reservation['mechanic_id'];
+$current_status =
+    $reservation['status'];
+
+$mechanic_id =
+    intval(
+        $reservation['mechanic_id'] ?? 0
+    );
 
 
 /*
@@ -85,16 +138,20 @@ if ($action === 'approve') {
         $stmt = mysqli_prepare(
             $conn,
             "UPDATE reservations
+
              SET status = 'Approved'
+
              WHERE id = ?
              AND status = 'Pending'"
         );
+
 
         mysqli_stmt_bind_param(
             $stmt,
             "i",
             $reservation_id
         );
+
 
         mysqli_stmt_execute($stmt);
 
@@ -103,7 +160,9 @@ if ($action === 'approve') {
 
 
     header(
-        "Location: reservation_view.php?id="
+        "Location: "
+        . ADMIN_BASE_URL
+        . "/reservation_view.php?id="
         . $reservation_id
     );
 
@@ -119,63 +178,39 @@ if ($action === 'approve') {
 
 if ($action === 'cancel') {
 
+    /*
+    | Only Pending and Approved reservations
+    | may be cancelled.
+    |
+    | The mechanic is NOT changed here because
+    | assignment no longer marks them Busy.
+    */
+
     if (
         $current_status === 'Pending' ||
         $current_status === 'Approved'
     ) {
 
-        /*
-        |--------------------------------------------------------------------------
-        | If a mechanic was already assigned,
-        | make that mechanic available again.
-        |--------------------------------------------------------------------------
-        */
-
-        if (!empty($mechanic_id)) {
-
-            $mechanic_stmt = mysqli_prepare(
-                $conn,
-                "UPDATE mechanics
-                 SET status = 'Available'
-                 WHERE id = ?
-                 AND status = 'Busy'"
-            );
-
-            mysqli_stmt_bind_param(
-                $mechanic_stmt,
-                "i",
-                $mechanic_id
-            );
-
-            mysqli_stmt_execute(
-                $mechanic_stmt
-            );
-
-            mysqli_stmt_close(
-                $mechanic_stmt
-            );
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Cancel reservation
-        |--------------------------------------------------------------------------
-        */
-
         $stmt = mysqli_prepare(
             $conn,
             "UPDATE reservations
+
              SET status = 'Cancelled'
+
              WHERE id = ?
-             AND status IN ('Pending', 'Approved')"
+             AND status IN (
+                'Pending',
+                'Approved'
+             )"
         );
+
 
         mysqli_stmt_bind_param(
             $stmt,
             "i",
             $reservation_id
         );
+
 
         mysqli_stmt_execute($stmt);
 
@@ -184,7 +219,9 @@ if ($action === 'cancel') {
 
 
     header(
-        "Location: reservation_view.php?id="
+        "Location: "
+        . ADMIN_BASE_URL
+        . "/reservation_view.php?id="
         . $reservation_id
     );
 
@@ -200,40 +237,126 @@ if ($action === 'cancel') {
 
 if ($action === 'start') {
 
-    /*
-    |--------------------------------------------------------------------------
-    | A mechanic must be assigned first.
-    |--------------------------------------------------------------------------
-    */
-
     if (
         $current_status === 'Approved' &&
-        !empty($mechanic_id)
+        $mechanic_id > 0
     ) {
 
-        $stmt = mysqli_prepare(
-            $conn,
-            "UPDATE reservations
-             SET status = 'In Progress'
-             WHERE id = ?
-             AND status = 'Approved'
-             AND mechanic_id IS NOT NULL"
-        );
+        mysqli_begin_transaction($conn);
 
-        mysqli_stmt_bind_param(
-            $stmt,
-            "i",
-            $reservation_id
-        );
 
-        mysqli_stmt_execute($stmt);
+        try {
 
-        mysqli_stmt_close($stmt);
+            /*
+            |--------------------------------------------------------------------------
+            | MARK MECHANIC BUSY
+            |--------------------------------------------------------------------------
+            */
+
+            $mechanic_stmt =
+                mysqli_prepare(
+                    $conn,
+                    "UPDATE mechanics
+
+                     SET status = 'Busy'
+
+                     WHERE id = ?
+                     AND status = 'Available'"
+                );
+
+
+            mysqli_stmt_bind_param(
+                $mechanic_stmt,
+                "i",
+                $mechanic_id
+            );
+
+
+            mysqli_stmt_execute(
+                $mechanic_stmt
+            );
+
+
+            if (
+                mysqli_stmt_affected_rows(
+                    $mechanic_stmt
+                ) !== 1
+            ) {
+
+                throw new Exception(
+                    "Mechanic is not available."
+                );
+            }
+
+
+            mysqli_stmt_close(
+                $mechanic_stmt
+            );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | START RESERVATION
+            |--------------------------------------------------------------------------
+            */
+
+            $reservation_stmt =
+                mysqli_prepare(
+                    $conn,
+                    "UPDATE reservations
+
+                     SET status = 'In Progress'
+
+                     WHERE id = ?
+                     AND status = 'Approved'
+                     AND mechanic_id = ?"
+                );
+
+
+            mysqli_stmt_bind_param(
+                $reservation_stmt,
+                "ii",
+                $reservation_id,
+                $mechanic_id
+            );
+
+
+            mysqli_stmt_execute(
+                $reservation_stmt
+            );
+
+
+            if (
+                mysqli_stmt_affected_rows(
+                    $reservation_stmt
+                ) !== 1
+            ) {
+
+                throw new Exception(
+                    "Reservation could not be started."
+                );
+            }
+
+
+            mysqli_stmt_close(
+                $reservation_stmt
+            );
+
+
+            mysqli_commit($conn);
+
+        } catch (Throwable $e) {
+
+            mysqli_rollback($conn);
+
+        }
     }
 
 
     header(
-        "Location: reservation_view.php?id="
+        "Location: "
+        . ADMIN_BASE_URL
+        . "/reservation_view.php?id="
         . $reservation_id
     );
 
@@ -249,40 +372,40 @@ if ($action === 'start') {
 
 if ($action === 'complete') {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Service must currently be In Progress.
-    |--------------------------------------------------------------------------
-    */
-
     if (
         $current_status === 'In Progress' &&
-        !empty($mechanic_id)
+        $mechanic_id > 0
     ) {
 
         mysqli_begin_transaction($conn);
+
 
         try {
 
             /*
             |--------------------------------------------------------------------------
-            | Complete reservation
+            | COMPLETE RESERVATION
             |--------------------------------------------------------------------------
             */
 
-            $reservation_stmt = mysqli_prepare(
-                $conn,
-                "UPDATE reservations
-                 SET status = 'Completed'
-                 WHERE id = ?
-                 AND status = 'In Progress'"
-            );
+            $reservation_stmt =
+                mysqli_prepare(
+                    $conn,
+                    "UPDATE reservations
+
+                     SET status = 'Completed'
+
+                     WHERE id = ?
+                     AND status = 'In Progress'"
+                );
+
 
             mysqli_stmt_bind_param(
                 $reservation_stmt,
                 "i",
                 $reservation_id
             );
+
 
             mysqli_stmt_execute(
                 $reservation_stmt
@@ -298,7 +421,6 @@ if ($action === 'complete') {
                 throw new Exception(
                     "Reservation could not be completed."
                 );
-
             }
 
 
@@ -309,23 +431,28 @@ if ($action === 'complete') {
 
             /*
             |--------------------------------------------------------------------------
-            | Make mechanic available again
+            | RELEASE MECHANIC
             |--------------------------------------------------------------------------
             */
 
-            $mechanic_stmt = mysqli_prepare(
-                $conn,
-                "UPDATE mechanics
-                 SET status = 'Available'
-                 WHERE id = ?
-                 AND status = 'Busy'"
-            );
+            $mechanic_stmt =
+                mysqli_prepare(
+                    $conn,
+                    "UPDATE mechanics
+
+                     SET status = 'Available'
+
+                     WHERE id = ?
+                     AND status = 'Busy'"
+                );
+
 
             mysqli_stmt_bind_param(
                 $mechanic_stmt,
                 "i",
                 $mechanic_id
             );
+
 
             mysqli_stmt_execute(
                 $mechanic_stmt
@@ -339,9 +466,8 @@ if ($action === 'complete') {
             ) {
 
                 throw new Exception(
-                    "Mechanic status could not be updated."
+                    "Mechanic could not be released."
                 );
-
             }
 
 
@@ -350,15 +476,9 @@ if ($action === 'complete') {
             );
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | Everything succeeded
-            |--------------------------------------------------------------------------
-            */
-
             mysqli_commit($conn);
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
 
             mysqli_rollback($conn);
 
@@ -367,23 +487,11 @@ if ($action === 'complete') {
 
 
     header(
-        "Location: reservation_view.php?id="
+        "Location: "
+        . ADMIN_BASE_URL
+        . "/reservation_view.php?id="
         . $reservation_id
     );
 
     exit;
 }
-
-
-/*
-|--------------------------------------------------------------------------
-| UNKNOWN ACTION
-|--------------------------------------------------------------------------
-*/
-
-header(
-    "Location: reservation_view.php?id="
-    . $reservation_id
-);
-
-exit;
