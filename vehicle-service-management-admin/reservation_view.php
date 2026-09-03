@@ -6,7 +6,7 @@ include_once __DIR__ . "/includes/admin_auth.php";
 $reservation_id = intval($_GET['id'] ?? 0);
 
 if ($reservation_id <= 0) {
-    header("Location: reservations.php");
+    header("Location: ". ADMIN_BASE_URL. "/reservations.php");
     exit;
 }
 
@@ -40,7 +40,7 @@ $reservation = mysqli_fetch_assoc($result);
 mysqli_stmt_close($stmt);
 
 if (!$reservation) {
-    header("Location: reservations.php");
+    header("Location: ". ADMIN_BASE_URL. "/reservations.php");
     exit;
 }
 
@@ -89,7 +89,7 @@ include "includes/admin_header.php";
         </div>
 
 
-        <a href="reservations.php" class="btn btn-secondary">
+        <a href="<?= ADMIN_BASE_URL; ?>/reservations.php" class="btn btn-secondary">
 
             ← Back to Reservations
 
