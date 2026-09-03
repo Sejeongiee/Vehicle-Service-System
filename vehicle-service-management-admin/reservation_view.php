@@ -791,7 +791,8 @@ include "includes/admin_header.php";
                 </div>
 
 
-                <a href="payment_view.php?id=<?= $payment['id']; ?>" class="btn btn-outline-primary">
+                <a href="<?= ADMIN_BASE_URL ?>/payment_view.php?id=<?= $payment['id']; ?>"
+                    class="btn btn-outline-primary">
 
                     Manage Payment
 
@@ -815,7 +816,8 @@ include "includes/admin_header.php";
                     for this reservation.
                 </p>
 
-                <a href="payment_add.php?reservation_id=<?= $reservation['id']; ?>" class="btn btn-primary">
+                <a href="<?= ADMIN_BASE_URL ?>/payment_add.php?reservation_id=<?= $reservation['id']; ?>"
+                    class="btn btn-primary">
 
                     + Create Payment
 
