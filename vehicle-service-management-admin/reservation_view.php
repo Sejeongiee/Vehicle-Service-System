@@ -1,12 +1,12 @@
 <?php
 
-include "includes/admin_auth.php";
-include "includes/config.php";
+include_once __DIR__ . "/includes/config.php";
+include_once __DIR__ . "/includes/admin_auth.php";
 
 $reservation_id = intval($_GET['id'] ?? 0);
 
 if ($reservation_id <= 0) {
-    header("Location: reservations.php");
+    header("Location: ". ADMIN_BASE_URL. "/reservations.php");
     exit;
 }
 
@@ -40,7 +40,7 @@ $reservation = mysqli_fetch_assoc($result);
 mysqli_stmt_close($stmt);
 
 if (!$reservation) {
-    header("Location: reservations.php");
+    header("Location: ". ADMIN_BASE_URL. "/reservations.php");
     exit;
 }
 
@@ -79,7 +79,17 @@ include "includes/admin_header.php";
         <div>
 
             <h2>
-                Reservation #<?= $reservation['id']; ?>
+
+                <?php if (!empty($reservation['reference_number'])): ?>
+
+                <?= htmlspecialchars($reservation['reference_number']); ?>
+
+                <?php else: ?>
+
+                Legacy Reservation #<?= intval($reservation['id']); ?>
+
+                <?php endif; ?>
+
             </h2>
 
             <p class="text-muted mb-0">
@@ -89,7 +99,7 @@ include "includes/admin_header.php";
         </div>
 
 
-        <a href="reservations.php" class="btn btn-secondary">
+        <a href="<?= ADMIN_BASE_URL; ?>/reservations.php" class="btn btn-secondary">
 
             ← Back to Reservations
 
@@ -138,6 +148,23 @@ include "includes/admin_header.php";
 
                         <?= htmlspecialchars(
                             $reservation['customer_email']
+                        ); ?>
+
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="text-muted">
+                        Phone
+                    </label>
+
+                    <div>
+
+                        <?= htmlspecialchars(
+                            $reservation['customer_phone']
+                            ?? '—'
                         ); ?>
 
                     </div>
@@ -523,7 +550,7 @@ include "includes/admin_header.php";
 
                 <?php if ($status === 'Approved'): ?>
 
-                <form method="POST" action="assign_mechanic.php">
+                <form method="POST" action="<?=ADMIN_BASE_URL ?>/assign_mechanic.php">
 
                     <input type="hidden" name="reservation_id" value="<?= $reservation['id']; ?>">
 
@@ -764,7 +791,8 @@ include "includes/admin_header.php";
                 </div>
 
 
-                <a href="payment_view.php?id=<?= $payment['id']; ?>" class="btn btn-outline-primary">
+                <a href="<?= ADMIN_BASE_URL ?>/payment_view.php?id=<?= $payment['id']; ?>"
+                    class="btn btn-outline-primary">
 
                     Manage Payment
 
@@ -788,7 +816,8 @@ include "includes/admin_header.php";
                     for this reservation.
                 </p>
 
-                <a href="payment_add.php?reservation_id=<?= $reservation['id']; ?>" class="btn btn-primary">
+                <a href="<?= ADMIN_BASE_URL ?>/payment_add.php?reservation_id=<?= $reservation['id']; ?>"
+                    class="btn btn-primary">
 
                     + Create Payment
 

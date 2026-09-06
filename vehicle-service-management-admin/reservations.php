@@ -154,7 +154,6 @@ $reservations = mysqli_query(
                         break;
 
                     case 'Cancelled':
-                    case 'Rejected':
                         $status_class = 'danger';
                         break;
 
@@ -309,7 +308,8 @@ $reservations = mysqli_query(
 
                         <td>
 
-                            <a href="reservation_view.php?id=<?= $reservation['id']; ?>" class="btn btn-sm btn-dark">
+                            <a href="<?= ADMIN_BASE_URL ?>/reservation_view.php?id=<?= $reservation['id']; ?>"
+                                class="btn btn-sm btn-dark">
                                 View
                             </a>
 
