@@ -1,7 +1,7 @@
 <?php
 
-include "includes/admin_auth.php";
-include "includes/config.php";
+include_once __DIR__ . "/includes/config.php";
+include __DIR__ . "/includes/admin_auth.php";
 
 
 $reservation_id = intval(
@@ -11,7 +11,7 @@ $reservation_id = intval(
 
 if ($reservation_id <= 0) {
 
-    header("Location: reservations.php");
+    header("Location: " . ADMIN_BASE_URL . "/reservations.php");
     exit;
 
 }
@@ -66,7 +66,7 @@ mysqli_stmt_close($stmt);
 
 if (!$reservation) {
 
-    header("Location: reservations.php");
+    header("Location: " . ADMIN_BASE_URL . "/reservations.php");
     exit;
 
 }
@@ -91,7 +91,7 @@ if (
 ) {
 
     header(
-        "Location: reservation_view.php?id="
+        "Location: " . ADMIN_BASE_URL . "/reservation_view.php?id="
         . $reservation_id
     );
 
@@ -134,7 +134,7 @@ mysqli_stmt_close($check_stmt);
 if ($existing) {
 
     header(
-        "Location: payment_view.php?id="
+        "Location: " . ADMIN_BASE_URL . "/payment_view.php?id="
         . $existing['id']
     );
 
@@ -149,12 +149,35 @@ $reference_number = "";
 
 $error = "";
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (empty($_SESSION['admin_csrf_token'])) {
+    $_SESSION['admin_csrf_token'] =
+        bin2hex(random_bytes(32));
+}
+
 
 /*
 |--------------------------------------------------------------------------
 | CREATE PAYMENT
 |--------------------------------------------------------------------------
 */
+
+$csrf_token =
+    $_POST['csrf_token'] ?? '';
+
+if (
+    empty($csrf_token) ||
+    !hash_equals(
+        $_SESSION['admin_csrf_token'],
+        $csrf_token
+    )
+) {
+    $error =
+        "Invalid payment request. Please refresh the page.";
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -244,7 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             header(
-                "Location: payment_view.php?id="
+                "Location: " . ADMIN_BASE_URL . "/payment_view.php?id="
                 . $payment_id
             );
 

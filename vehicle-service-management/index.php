@@ -62,7 +62,7 @@ $services = mysqli_query(
 
             <p>
 
-                We are your one stop shop for your car's maintenance and repairs. 
+                We are your one stop shop for your car's maintenance and repairs.
                 Our accommodating head mechanic, Lucky, specializes on all car makes and models.
 
             </p>
@@ -459,7 +459,8 @@ $services = mysqli_query(
                     temporarily.
                 -->
 
-                <img src="<?= BASE_URL ?>/images/cover.png" alt="Vehicle Service" class="why-image" style="width: 100%; max-width: 700px; height: auto;">
+                <img src="<?= BASE_URL ?>/images/cover.png" alt="Vehicle Service" class="why-image"
+                    style="width: 100%; max-width: 700px; height: auto;">
 
 
             </div>
@@ -547,7 +548,7 @@ $services = mysqli_query(
             </div>
 
         </div>
-<!--
+        <!--
         <a href="<?= BASE_URL ?>/makes-models.php" class="see-all-makes">
             See All Makes And Models
         </a>
